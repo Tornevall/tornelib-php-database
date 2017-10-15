@@ -1,5 +1,5 @@
 {
-  "name": "tornevall/tornelib-php-core",
+  "name": "tornevall/tornelib-php-database",
   "description": "TorneLIB - Generic database driver for MySQL, PDO, etc",
   "minimum-stability": "stable",
   "license": "Apache-2.0",
