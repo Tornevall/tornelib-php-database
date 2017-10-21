@@ -19,7 +19,7 @@ namespace TorneLIB;
  * @package TorneLIB
  */
 
-class TorneLIB_Database
+class TorneLIB_Database_Deprecated
 {
     /**
      * @var Parent

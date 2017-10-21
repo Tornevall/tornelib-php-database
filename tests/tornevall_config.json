@@ -1,0 +1,12 @@
+{
+  "database": {
+    "servers": {
+      "localhost": {
+        "user": "root",
+        "server": "localhost",
+        "password": "password"
+      }
+    }
+  }
+}
+
