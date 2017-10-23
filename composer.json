@@ -16,10 +16,16 @@
   ],
   "autoload": {
     "files": [
-      "source/tornevall_database.php"
+      "source/tornevall_database_abstracts.php",
+      "source/tornevall_database_interface.php",
+      "source/tornevall_database.php",
+      "source/tornevall_database_driver_mysql.php"
     ],
     "psr-4": {
-      "\\TorneLIB\\": "source/tornevall_database.php"
+      "\\TorneLIB\\": "source/tornevall_database_abstracts.php",
+      "\\TorneLIB\\": "source/tornevall_database_interface.php",
+      "\\TorneLIB\\": "source/tornevall_database.php",
+      "\\TorneLIB\\": "source/tornevall_database_driver_mysql.php"
     }
   }
 }
