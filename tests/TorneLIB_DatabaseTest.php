@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * To run the tests, you need to set up a database with the content defined in tornelib_tests.sql
+ * You should also put the file tornevall_config.json in /etc (or append the current if already exists)
+ */
+
 use TorneLIB\TorneLIB_Database;
 use PHPUnit\Framework\TestCase;
 use \TorneLIB\TORNEVALL_DATABASE_EXCEPTIONS;
@@ -7,6 +12,9 @@ use \TorneLIB\TORNEVALL_DATABASE_DRIVERS;
 
 require_once( '../vendor/autoload.php' );
 
+/**
+ * Class TorneLIB_DatabaseTest
+ */
 class TorneLIB_DatabaseTest extends TestCase {
 
 	/** @var  TorneLIB_Database */
@@ -216,7 +224,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 	function testEscapeSqli() {
 		$this->Database->connect();
 		$this->Database->db( $this->DBName );
-		$myString = $this->Database->escape("''");
+		// Very simple test goes here
+		$myString = $this->Database->escape("'");
 		$this->assertTrue($myString == "\'");
 
 	}

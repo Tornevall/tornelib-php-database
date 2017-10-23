@@ -4,6 +4,10 @@ namespace TorneLIB;
 
 require_once __DIR__ . "/tornevall_database_interface.php";
 
+/**
+ * Class libdriver_database_template Default interface of what drivers needs to be built
+ * @package TorneLIB
+ */
 class libdriver_database_template implements libdriver_interface {
 
 	/** @var Identifier name */
