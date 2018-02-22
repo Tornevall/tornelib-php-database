@@ -10,7 +10,11 @@ use PHPUnit\Framework\TestCase;
 use \TorneLIB\TORNEVALL_DATABASE_EXCEPTIONS;
 use \TorneLIB\TORNEVALL_DATABASE_DRIVERS;
 
-require_once( '../vendor/autoload.php' );
+if (file_exists(__DIR__ . "/../vendor/autoload.php")) {
+	require_once( __DIR__ . '/../vendor/autoload.php' );
+} else {
+	die("Install composer first");
+}
 
 /**
  * Class TorneLIB_DatabaseTest
