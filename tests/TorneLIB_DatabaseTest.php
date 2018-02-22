@@ -22,13 +22,13 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	private $Username = "root";
 	private $Password = "";
+	private $Server = "127.0.0.1";
 	private $DBName = "tornelib_tests";
 
 	public function setUp() {
 		/** @var TorneLIB_Database */
 		$this->Database = new TorneLIB_Database();
 		// Read from another directory than /etc (see example)
-		//$this->Database->setConfig(__DIR__ . "/tornevall_config.json");
 	}
 
 	public function tearDown() {
@@ -46,12 +46,41 @@ class TorneLIB_DatabaseTest extends TestCase {
 		$this->assertTrue( $this->Database->connect() );
 	}
 
+	function testMysqlConstruct() {
+		if (empty($this->Password)) {
+			$this->markTestSkipped("No password set for this test - skipping");
+			return;
+		}
+		try {
+			$SA = new TorneLIB_Database( null, null, $this->Server, $this->Username, $this->Password, \TorneLIB\TORNEVALL_DATABASE_TYPES::MYSQL, $this->DBName );
+		} catch ( \Exception $e ) {
+		}
+		$SA->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
+		$iResult = $SA->Query_First( "SELECT COUNT(*) c FROM tests" );
+		$this->assertTrue( $iResult['c'] > 0 );
+	}
+
+	function testMysqlNoConstruct() {
+		if (empty($this->Password)) {
+			$this->markTestSkipped("No password set for this test - skipping");
+			return;
+		}
+		try {
+			$this->Database->connect( null, null, $this->Server, $this->Username, $this->Password );
+			$this->Database->setDatabase( $this->DBName );
+		} catch ( \Exception $e ) {
+		}
+		$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
+		$iResult = $this->Database->Query_First( "SELECT COUNT(*) c FROM tests" );
+		$this->assertTrue( $iResult['c'] > 0 );
+	}
+
 	function testMysqlUserFail() {
 		try {
 			$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED );
 			$this->Database->connect( null, null, null, "nonExistentUserErrcode1045" );
 		} catch ( \Exception $e ) {
-			$this->assertTrue( $e->getCode() == TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLD_NOT_EXIST );
+			$this->assertTrue( $e->getCode() == TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLD_NOT_EXIST || $e->getCode() == 1045 );
 		}
 	}
 
@@ -225,15 +254,16 @@ class TorneLIB_DatabaseTest extends TestCase {
 		$this->Database->connect();
 		$this->Database->db( $this->DBName );
 		// Very simple test goes here
-		$myString = $this->Database->escape("'");
-		$this->assertTrue($myString == "\'");
+		$myString = $this->Database->escape( "'" );
+		$this->assertTrue( $myString == "\'" );
 
 	}
+
 	function testEscapePdo() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
 		$this->Database->connect();
-		$myString = $this->Database->escape("'");
-		$this->assertTrue($myString == "\'");
+		$myString = $this->Database->escape( "'" );
+		$this->assertTrue( $myString == "\'" );
 	}
 
 }

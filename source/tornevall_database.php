@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.0
+ * @version 6.0.1
  */
 
 namespace TorneLIB;
@@ -56,6 +56,8 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 
 		/** @var libdriver_database_interface */
 		private $serverResource;
+		/** @var resource $connector */
+		private $connector;
 		/** @var bool Specifies if the database initializer should recreate resource for each new instance - normally we'd like to keep the old resource so it will be possible to enforce drivers */
 		private $forceNewResource = false;
 
@@ -71,6 +73,9 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 		 * @param string $databaseName
 		 */
 		function __construct( $serverIdentifier = '', $serverOptions = array(), $serverHostAddr = null, $serverUsername = null, $serverPassword = null, $serverType = TORNEVALL_DATABASE_TYPES::MYSQL, $databaseName = '' ) {
+			if ( is_null( $serverOptions ) ) {
+				$serverOptions = array();
+			}
 			$this->setServerIdentifier( $serverIdentifier );
 			$this->setServerOptions( $serverOptions );
 			$this->setServerHostAddr( $serverHostAddr );
@@ -100,12 +105,14 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 					return true;
 				}
 			}
-			if ( $this->serverType == TORNEVALL_DATABASE_TYPES::MYSQL ) {
+			if ( $this->serverType === TORNEVALL_DATABASE_TYPES::MYSQL ) {
 				$this->serverResource = new libdriver_mysql( $this->getServerIdentifier(), $this->getServerOptions(), $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword() );
 				$this->serverResource->setPort( $this->getPort() );
 				$this->serverResource->setDatabase( $this->getDatabase() );
-				if ( $this->serverDriverType != TORNEVALL_DATABASE_DRIVERS::DRIVER_TYPE_NONE && method_exists( $this->serverResource, "setDriverType" ) ) {
-					$this->setDriverType( $this->serverDriverType );
+				if ( $this->serverDriverType !== TORNEVALL_DATABASE_DRIVERS::DRIVER_TYPE_NONE ) {
+					if ( method_exists( $this->serverResource, "setDriverType" ) ) {
+						$this->setDriverType( $this->serverDriverType );
+					}
 				}
 			}
 		}
@@ -231,6 +238,9 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 		public function setDatabase( $databaseName = '' ) {
 			if ( ! empty( $databaseName ) ) {
 				$this->serverDatabaseName = $databaseName;
+				if ( ! empty( $this->serverResource ) && method_exists( $this->serverResource, "setDatabase" ) ) {
+					$this->serverResource->setDatabase( $this->serverDatabaseName );
+				}
 			}
 		}
 
@@ -287,7 +297,14 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 			$this->setServerPassword( $serverPassword );
 			$this->initializeDatabaseDriver( $forceNew );
 
-			return $this->serverResource->connect( $this->getServerIdentifier(), $this->getServerOptions(), $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword() );
+			$useDatabase = $this->getDatabase();
+			if ( ! empty( $useDatabase ) ) {
+				$this->serverResource->setDatabase();
+			}
+
+			$this->connector = $this->serverResource->connect( $this->getServerIdentifier(), $this->getServerOptions(), $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword() );
+
+			return $this->connector;
 		}
 
 		/**

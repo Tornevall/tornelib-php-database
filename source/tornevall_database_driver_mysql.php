@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.0
+ * @version 6.0.1
  *
  */
 
@@ -77,8 +77,19 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param null $serverPassword
 		 */
 		function __construct( $serverIdentifier = '', $serverOptions = array(), $serverHostAddr = null, $serverUsername = null, $serverPassword = null ) {
-			$this->serverIdentifier = $serverIdentifier;
+			if ( is_null( $serverOptions ) ) {
+				$serverOptions = array();
+			}
+			$this->setServerIdentifier( $serverIdentifier );
+			$this->setServerOptions( $serverOptions );
+			$this->setServerHostAddr( $serverHostAddr );
+			$this->setServerUserName( $serverUsername );
+			$this->setServerPassword( $serverPassword );
 			$this->setConfig();
+			if ( ! is_null( $serverHostAddr ) ) {
+				$this->getValidDrivers();
+				$this->connect( $this->getServerIdentifier(), $this->getServerOptions(), $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword() );
+			}
 		}
 
 		/**
@@ -288,6 +299,9 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			if ( ! empty( $databaseName ) ) {
 				$this->serverDatabaseName = $databaseName;
 			}
+			if ( ! empty( $this->dataResource ) ) {
+				$this->db( $this->serverDatabaseName );
+			}
 		}
 
 		/**
@@ -322,6 +336,15 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 				return $this->preferredDriverType;
 			}
 
+			$this->getValidDrivers();
+
+			return $this->preferredDriverType;
+		}
+
+		/**
+		 * Make sure there is a valid database driver on connect (especially if running from constructor level)
+		 */
+		private function getValidDrivers() {
 			if ( function_exists( 'mysqli_connect' ) ) {
 				$this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED;
 			} else if ( function_exists( 'mysql_connect' ) ) {
@@ -335,8 +358,6 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 					}
 				}
 			}
-
-			return $this->preferredDriverType;
 		}
 
 		/**
@@ -478,6 +499,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			$this->setServerUserName( $serverUsername );
 			$this->setServerPassword( $serverPassword );
 			$driverInit = $this->prepareConnect();
+
 			if ( $driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED ) {
 				return $this->CONNECT_MYSQL_IMPROVED();
 			} else if ( $driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED ) {
@@ -882,6 +904,8 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			} else if ( $this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO ) {
 				// This is highly unsupported
 				return $this->QUERY_PDO_PREPARE( $queryString, $parameters, $tests );
+			} else {
+				throw new \Exception( "Can not find any valid driver type", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_UNDEFINED );
 			}
 		}
 
