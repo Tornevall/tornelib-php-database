@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.1
+ * @version 6.0.2
  *
  */
 
@@ -133,7 +133,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			$checkUser = $this->getServerUserName();
 
 			// Check if there are user data
-			if ( empty( $checkAddr ) || empty( $checkUser ) ) {
+			if ( empty( $checkAddr ) && empty( $checkUser ) ) {
 				if ( isset( $this->CONFIG ) ) {
 					if ( isset( $this->CONFIG->localhost ) ) {
 						$useDataSource = "localhost";

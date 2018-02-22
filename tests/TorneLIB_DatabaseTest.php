@@ -64,7 +64,7 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testMysqliConnect() {
-		$this->assertTrue( $this->Database->connect() );
+		$this->assertTrue( $this->Database->connect(null, null, $this->Server, $this->Username, $this->Password) );
 	}
 
 	function testMysqlConstruct() {
@@ -107,7 +107,7 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	function testMysqlPConnect() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
-		$this->assertTrue( $this->Database->connect() );
+		$this->assertTrue( $this->Database->connect(null, null, $this->Server, $this->Username, $this->Password) );
 	}
 
 	function testMysqlPConnectFail() {
@@ -120,36 +120,38 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testChangeMysqliDatabase() {
-		$this->Database->connect();
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		$this->assertTrue( $this->Database->db( $this->DBName ) );
 	}
 
 	function testChangeMysqliDatabaseOnConnect() {
 		$this->Database->setDatabase( $this->DBName );
-		$this->assertTrue( $this->Database->connect() );
+		$this->assertTrue( $this->Database->connect(null, null, $this->Server, $this->Username, $this->Password) );
 	}
 
 	function testFailChangeMysqliDatabaseOnConnect() {
-		$this->Database->setDatabase( "fail" );
 		try {
-			$this->assertTrue( $this->Database->connect() );
+			$this->Database->setDatabase( "fail" );
+			$this->assertTrue( $this->Database->connect(null, null, $this->Server, $this->Username, $this->Password) );
 		} catch ( \Exception $e ) {
-			$this->assertTrue( $e->getCode() == 1049 );
+			// Using credentials that is not root generates 1044 errors
+			$this->assertTrue( $e->getCode() == 1049 || $e->getCode() == 1044 );
 		}
 	}
 
 	function testChangeMysqliDatabaseFail() {
-		$this->Database->connect();
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		try {
 			$this->Database->db( "fail" );
 		} catch ( \Exception $dbError ) {
-			$this->assertTrue( $dbError->getCode() == 1049 );
+			// Using credentials that is not root generates 1044 errors
+			$this->assertTrue( $dbError->getCode() == 1049 || $dbError->getCode() == 1044);
 		}
 	}
 
 	function testPrepareSqliInsertResult() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->setDatabase( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		try {
 			// Insert to extract
 			$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
@@ -159,8 +161,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testPrepareSqliInsertResultHardWay() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		try {
 			$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
 			$this->assertTrue( $this->Database->query_prepare( "SELECT * FROM tests WHERE 1 = ?", array( 1 ), array( 'META' ) ) );
@@ -170,7 +172,7 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testPrepareSqliGetResult() {
-		$this->Database->connect();
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		$this->Database->db( $this->DBName );
 		try {
 			// Insert to extract
@@ -190,8 +192,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testPrepareSqliGetResultHardWay() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		try {
 			// Insert to extract
 			$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ), array( 'META' ) );
@@ -211,8 +213,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	function testPreparePdoInsert() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		try {
 			// Insert.
 			$this->assertTrue( $this->Database->query_prepare( "INSERT INTO " . $this->DBName . ".tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) ) );
@@ -221,8 +223,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testSqliQueryFirst() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
 		$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
 		$this->Database->query_prepare( "INSERT INTO tests (`data`) VALUES (?)", array( rand( 1, 1024 ) ) );
@@ -231,16 +233,16 @@ class TorneLIB_DatabaseTest extends TestCase {
 	}
 
 	function testSqliQueryFirstEmpty() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		$this->Database->query_prepare( "TRUNCATE TABLE tests" );
 		$firstAssoc = $this->Database->query_first( "SELECT * FROM tests WHERE data > ?", array( 0 ) );
 		$this->assertTrue( ! is_array( $firstAssoc ) );
 	}
 
 	function testSqliRaw() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		$this->Database->query_prepare( "TRUNCATE TABLE tests" );
 		$counter = 5;
 		while ( $counter -- > 0 ) {
@@ -253,8 +255,8 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	function testPdoQuery() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		$this->Database->query_prepare( "TRUNCATE TABLE tests" );
 		$counter = 5;
 		while ( $counter -- > 0 ) {
@@ -267,13 +269,13 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	function testChangePdoDatabase() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
-		$this->Database->connect();
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		$this->assertTrue( $this->Database->db( $this->DBName ) );
 	}
 
 	function testEscapeSqli() {
-		$this->Database->connect();
-		$this->Database->db( $this->DBName );
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
+		$this->Database->setDatabase( $this->DBName );
 		// Very simple test goes here
 		$myString = $this->Database->escape( "'" );
 		$this->assertTrue( $myString == "\'" );
@@ -282,7 +284,7 @@ class TorneLIB_DatabaseTest extends TestCase {
 
 	function testEscapePdo() {
 		$this->Database->setDriverType( TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO );
-		$this->Database->connect();
+		$this->Database->connect(null, null, $this->Server, $this->Username, $this->Password);
 		$myString = $this->Database->escape( "'" );
 		$this->assertTrue( $myString == "\'" );
 	}
