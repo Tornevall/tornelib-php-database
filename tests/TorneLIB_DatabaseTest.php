@@ -24,15 +24,32 @@ class TorneLIB_DatabaseTest extends TestCase {
 	/** @var  TorneLIB_Database */
 	private $Database;
 
-	private $Username = "root";
-	private $Password = "";
+	/**
+	 * For this section, check tornelib_tests.sql
+	 */
+
+	/**
+	 * @var string $Username Username for tests
+	 */
+	private $Username = "tornelib";
+
+	/**
+	 * @var string $Password Password for tests
+	 */
+	private $Password = "tornelib1337";
+
+	/**
+	 * @var string $Server Connecting to what?
+	 */
 	private $Server = "127.0.0.1";
+
+	/**
+	 * @var string $DBName Database with all them tables
+	 */
 	private $DBName = "tornelib_tests";
 
 	public function setUp() {
-		/** @var TorneLIB_Database */
 		$this->Database = new TorneLIB_Database();
-		// Read from another directory than /etc (see example)
 	}
 
 	public function tearDown() {
