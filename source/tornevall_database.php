@@ -29,6 +29,10 @@ if ( ! class_exists( 'TorneLIB_Database' ) && ! class_exists( 'TorneLIB\TorneLIB
 
 	/**
 	 * Class TorneLIB_Database
+	 *
+	 * Making sure autotests are running:
+	 *  apt-get install php-mysqli
+	 *
 	 * @package TorneLIB
 	 * @version 6.0.0
 	 */
