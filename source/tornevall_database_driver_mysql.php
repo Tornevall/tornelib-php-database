@@ -412,16 +412,16 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 				$connectResource = @mysqli_connect( $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword(), $this->getDatabase(), $this->getPort() );
 				$this->setSqlOptions( $connectResource );
 				if ( mysqli_connect_errno() ) {
-					throw new \Exception( mysqli_connect_error(), mysqli_connect_errno() );
+					throw new \Exception( __FUNCTION__ . ": " . mysqli_connect_error(), mysqli_connect_errno() );
 				} else if ( mysqli_errno( $connectResource ) ) {
-					throw new \Exception( mysqli_error( $connectResource ), mysqli_errno( $connectResource ) );
+					throw new \Exception( __FUNCTION__ . ": " . mysqli_error( $connectResource ), mysqli_errno( $connectResource ) );
 				} else if ( is_object( $connectResource ) ) {
 					$this->dataResource = $connectResource;
 					$this->db();
 					$connectSuccess = true;
 				}
 			} else {
-				throw new \Exception( "You are trying to use a database driver that does not exist (mysqli_connect)", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLI_NOT_EXIST );
+				throw new \Exception( __FUNCTION__ . ": You are trying to use a database driver that does not exist (mysqli_connect)", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLI_NOT_EXIST );
 			}
 
 			return $connectSuccess;
