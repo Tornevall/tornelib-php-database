@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.2
+ * @version 6.0.3
  *
  */
 
@@ -67,15 +67,17 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		/** @var bool Set up to return object instead of array for PDO */
 		private $getAsSqlObject;
 
-		/**
-		 * libdriver_mysql constructor.
-		 *
-		 * @param string $serverIdentifier
-		 * @param array $serverOptions
-		 * @param null $serverHostAddr
-		 * @param null $serverUsername
-		 * @param null $serverPassword
-		 */
+        /**
+         * libdriver_mysql constructor.
+         *
+         * @param string $serverIdentifier
+         * @param array  $serverOptions
+         * @param null   $serverHostAddr
+         * @param null   $serverUsername
+         * @param null   $serverPassword
+         *
+         * @throws \Exception
+         */
 		function __construct( $serverIdentifier = '', $serverOptions = array(), $serverHostAddr = null, $serverUsername = null, $serverPassword = null ) {
 			if ( is_null( $serverOptions ) ) {
 				$serverOptions = array();
@@ -111,6 +113,11 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			}
 		}
 
+        /**
+         * @param string $configJsonFile
+         *
+         * @throws \Exception
+         */
 		public function setConfig( $configJsonFile = '/etc/tornevall_config.json' ) {
 			if ( file_exists( $configJsonFile ) ) {
 				$jsonConfig = @file_get_contents( $configJsonFile );
@@ -126,6 +133,9 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			}
 		}
 
+        /**
+         * @throws \Exception
+         */
 		private function getDataFromConfig() {
 			$useDataSource = "";
 
@@ -290,11 +300,13 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			$this->serverDriver = $ownServerDriver;
 		}
 
-		/**
-		 * Preconfigure database to connect to
-		 *
-		 * @param string $databaseName
-		 */
+        /**
+         * Preconfigure database to connect to
+         *
+         * @param string $databaseName
+         *
+         * @throws \Exception
+         */
 		public function setDatabase( $databaseName = '' ) {
 			if ( ! empty( $databaseName ) ) {
 				$this->serverDatabaseName = $databaseName;
@@ -369,11 +381,11 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			$this->preferredDriverTypeEnforced = $serverDriverType;
 		}
 
-		/**
-		 * Return information about chosen subdriver (if any)
-		 *
-		 * @return libdriver_database_interface
-		 */
+        /**
+         * Return information about chosen subdriver (if any)
+         *
+         * @return bool|int
+         */
 		public function getDriverType() {
 			if ( ! empty( $this->preferredDriverTypeEnforced ) ) {
 				return $this->preferredDriverTypeEnforced;
@@ -430,7 +442,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		/**
 		 * Connect to mysql with PDO driver
 		 * @return bool
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function CONNECT_PDO() {
 			$connectSuccess = false;
@@ -458,7 +470,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		/**
 		 * Successful connects returns true
 		 * @return bool
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function CONNECT_MYSQL_DEPRECATED() {
 			$connectSuccess = false;
@@ -526,7 +538,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param string $databaseName
 		 *
 		 * @return bool
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function db( $databaseName = '' ) {
 			if ( empty( $databaseName ) ) {
@@ -580,7 +592,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param array $tests
 		 *
 		 * @return bool
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function QUERY_MYSQLI_PREPARE( $queryString = '', $parameters = array(), $tests = array() ) {
 			$statementPrepare = mysqli_prepare( $this->dataResource, $queryString );
@@ -657,7 +669,11 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 								}
 							}
 						}
-					}
+                    } else {
+                        if (isset($statementPrepare->errno) && $statementPrepare->errno > 0) {
+                            throw new \Exception($statementPrepare->error, $statementPrepare->errno);
+                        }
+                    }
 				}
 			} else {
 				throw new \Exception( "Query statement is empty", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_EMPTY_STATEMENT );
@@ -670,7 +686,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param string $queryString
 		 * @param array $parameters
 		 *
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function QUERY_MYSQL_PREPARE( $queryString = '', $parameters = array() ) {
 			throw new \Exception( "Prepared statements are not supported in this driver", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_PREPARE_DEPRECATED );
@@ -683,7 +699,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param array $parameters
 		 *
 		 * @return bool
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function QUERY_PDO_PREPARE( $queryString = '', $parameters = array() ) {
 			$pdoExecResult           = false;
@@ -760,7 +776,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param string $queryString
 		 *
 		 * @return bool|\mysqli_result
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function QUERY_RAW_MYSQLI( $queryString = '' ) {
 			$queryResponse = mysqli_query( $this->dataResource, $queryString );
@@ -800,7 +816,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param string $queryString
 		 *
 		 * @return resource
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		private function QUERY_RAW_DEPRECATED( $queryString = '' ) {
 			$queryResponse = mysql_query( $queryString, $this->dataResource );
@@ -820,7 +836,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param string $queryString
 		 *
 		 * @return bool|\mysqli_result|resource
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function query_raw( $queryString = '' ) {
 			if ( ! empty( $queryString ) ) {
@@ -836,14 +852,15 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			}
 		}
 
-		/**
-		 * Prepare a query
-		 *
-		 * @param string $queryString
-		 * @param array $parameters Set to null, falling back to raw queries
-		 *
-		 * @return array|null
-		 */
+        /**
+         * Prepare a query
+         *
+         * @param string $queryString
+         * @param array  $parameters Set to null, falling back to raw queries
+         *
+         * @return bool|\mysqli_result|resource|void
+         * @throws Exception
+         */
 		public function query( $queryString = '', $parameters = array() ) {
 			if ( is_null( $parameters ) ) {
 				return $this->query_raw( $queryString );
@@ -852,30 +869,32 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 			}
 		}
 
-		/**
-		 * Query first entry in database
-		 *
-		 * From v6.0, this is based on prepares
-		 *
-		 * @param string $queryString
-		 * @param array $parameters
-		 *
-		 * @return array|null
-		 */
+        /**
+         * Query first entry in database
+         *
+         * From v6.0, this is based on prepares
+         *
+         * @param string $queryString
+         * @param array  $parameters
+         *
+         * @return array|null
+         * @throws Exception
+         */
 		public function query_first( $queryString = '', $parameters = array() ) {
 			if ( $this->query_prepare( $queryString, $parameters ) ) {
 				return $this->fetch();
 			}
 		}
 
-		/**
-		 * Query first intry in database, with prepare statement
-		 *
-		 * @param string $queryString
-		 * @param array $parameters
-		 *
-		 * @return array|null
-		 */
+        /**
+         * Query first intry in database, with prepare statement
+         *
+         * @param string $queryString
+         * @param array  $parameters
+         *
+         * @return array|null
+         * @throws Exception
+         */
 		public function query_prepare_first( $queryString = '', $parameters = array() ) {
 			return $this->query_first();
 		}
@@ -888,7 +907,7 @@ if ( ! class_exists( 'libdriver_mysql' ) && ! class_exists( 'TorneLIB\libdriver_
 		 * @param array $tests
 		 *
 		 * @return bool|void
-		 * @throws Exception
+		 * @throws \Exception
 		 */
 		public function query_prepare( $queryString = '', $parameters = array(), $tests = array() ) {
 			if ( ! is_array( $parameters ) ) {
