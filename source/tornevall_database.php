@@ -377,8 +377,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
                 $this->SERVER_RESOURCE->setDatabase();
             }
 
-            $this->SERVER_RESOURCE_CONNECTOR = $this->SERVER_RESOURCE->connect($this->getServerIdentifier(),
-                $this->getServerOptions(),
+            $this->SERVER_RESOURCE_CONNECTOR = $this->SERVER_RESOURCE->connect($this->getServerIdentifier(), $this->getServerOptions(),
                 $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword());
 
             return $this->SERVER_RESOURCE_CONNECTOR;

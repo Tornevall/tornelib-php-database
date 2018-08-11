@@ -78,8 +78,7 @@ class databaseTest extends TestCase
      */
     function mysqliConnect()
     {
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS,
-            $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
+        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
     }
 
     /**
@@ -95,8 +94,7 @@ class databaseTest extends TestCase
         /** @var MODULE_DATABASE */
         $SA = null;
         try {
-            $SA = new MODULE_DATABASE("testServer", array(), $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-                $this->DATABASE_USER_PASSWORD,
+            $SA = new MODULE_DATABASE("testServer", array(), $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD,
                 TORNEVALL_DATABASE_TYPES::MYSQL, $this->DBName);
         } catch (\Exception $e) {
         }
@@ -108,13 +106,11 @@ class databaseTest extends TestCase
     /**
      * @test
      */
-    function mysqlPoppableQuery()
-    {
+    function mysqlPoppableQuery() {
         /** @var MODULE_DATABASE */
         $SA = null;
         try {
-            $SA = new MODULE_DATABASE("testServer", array(), $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-                $this->DATABASE_USER_PASSWORD,
+            $SA = new MODULE_DATABASE("testServer", array(), $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD,
                 TORNEVALL_DATABASE_TYPES::MYSQL, $this->DBName);
         } catch (\Exception $e) {
         }
@@ -134,8 +130,7 @@ class databaseTest extends TestCase
             return;
         }
         try {
-            $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-                $this->DATABASE_USER_PASSWORD);
+            $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
             $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         } catch (\Exception $e) {
         }
@@ -164,8 +159,7 @@ class databaseTest extends TestCase
     function mysqlPConnect()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS,
-            $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
+        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
     }
 
     /**
@@ -187,8 +181,7 @@ class databaseTest extends TestCase
      */
     function changeMysqliDatabase()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
     }
 
@@ -199,8 +192,7 @@ class databaseTest extends TestCase
     function changeMysqliDatabaseOnConnect()
     {
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS,
-            $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
+        $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
     }
 
     /**
@@ -210,8 +202,7 @@ class databaseTest extends TestCase
     {
         try {
             $this->DATABASE_INTERFACE->setDatabase("fail");
-            $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS,
-                $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
+            $this->assertTrue($this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD));
         } catch (\Exception $e) {
             // Using credentials that is not root generates 1044 errors
             $this->assertTrue($e->getCode() == 1049 || $e->getCode() == 1044);
@@ -224,8 +215,7 @@ class databaseTest extends TestCase
      */
     function changeMysqliDatabaseFail()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         try {
             $this->DATABASE_INTERFACE->db("fail");
         } catch (\Exception $dbError) {
@@ -241,8 +231,7 @@ class databaseTest extends TestCase
     function prepareSqliInsertResult()
     {
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         try {
             // Insert to extract
             $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", array(rand(1, 1024)));
@@ -257,8 +246,7 @@ class databaseTest extends TestCase
      */
     function prepareSqliInsertResultHardWay()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         try {
             $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", array(rand(1, 1024)));
@@ -275,15 +263,13 @@ class databaseTest extends TestCase
      */
     function prepareSqliGetResult()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->db($this->DBName);
         try {
             // Insert to extract
             $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", array(rand(1, 1024)));
             $rows = 0;
-            if ($this->DATABASE_INTERFACE->query_prepare("SELECT * FROM tests WHERE 1 = ? ORDER BY data DESC",
-                array(1))) {
+            if ($this->DATABASE_INTERFACE->query_prepare("SELECT * FROM tests WHERE 1 = ? ORDER BY data DESC", array(1))) {
                 while ($row = $this->DATABASE_INTERFACE->fetch()) {
                     $rows++;
                     if ($rows >= 10) {
@@ -302,8 +288,7 @@ class databaseTest extends TestCase
      */
     function prepareSqliGetResultHardWay()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         try {
             // Insert to extract
@@ -331,8 +316,7 @@ class databaseTest extends TestCase
     function preparePdoInsert()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         try {
             // Insert.
@@ -348,8 +332,7 @@ class databaseTest extends TestCase
      */
     function sqliQueryFirst()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", array(rand(1, 1024)));
         $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", array(rand(1, 1024)));
@@ -364,8 +347,7 @@ class databaseTest extends TestCase
      */
     function sqliQueryFirstEmpty()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         $this->DATABASE_INTERFACE->query_prepare("TRUNCATE TABLE tests");
         $firstAssoc = $this->DATABASE_INTERFACE->query_first("SELECT * FROM tests WHERE data > ?", array(0));
@@ -378,8 +360,7 @@ class databaseTest extends TestCase
      */
     function sqliRaw()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         $this->DATABASE_INTERFACE->query_prepare("TRUNCATE TABLE tests");
         $counter = 5;
@@ -398,8 +379,7 @@ class databaseTest extends TestCase
     function pdoQuery()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         $this->DATABASE_INTERFACE->query_prepare("TRUNCATE TABLE tests");
         $counter = 5;
@@ -418,8 +398,7 @@ class databaseTest extends TestCase
     function changePdoDatabase()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
     }
 
@@ -429,8 +408,7 @@ class databaseTest extends TestCase
      */
     function escapeSqli()
     {
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         // Very simple test goes here
         $myString = $this->DATABASE_INTERFACE->escape("'");
@@ -445,8 +423,7 @@ class databaseTest extends TestCase
     function escapePdo()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME,
-            $this->DATABASE_USER_PASSWORD);
+        $this->DATABASE_INTERFACE->connect(null, null, $this->DATABASE_SERVER_ADDRESS, $this->DATABASE_USER_NAME, $this->DATABASE_USER_PASSWORD);
         $myString = $this->DATABASE_INTERFACE->escape("'");
         $this->assertTrue($myString == "\'");
     }
