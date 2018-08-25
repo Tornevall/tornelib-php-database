@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.3
+ * @version 6.0.4
  */
 
 namespace TorneLIB;
@@ -34,7 +34,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
      *  apt-get install php-mysqli
      *
      * @package TorneLIB
-     * @version 6.0.3
+     * @version 6.0.4
      */
     class MODULE_DATABASE implements libdriver_database_interface
     {
