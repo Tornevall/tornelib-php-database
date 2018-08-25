@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.4
+ * @version 6.0.5
  */
 
 namespace TorneLIB;
