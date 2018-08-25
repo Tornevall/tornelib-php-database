@@ -16,7 +16,7 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.5
+ * @version 6.0.6
  *
  */
 
@@ -729,17 +729,17 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                                 }
                                 call_user_func_array(array($statementPrepare, 'bind_result'), $resultArray);
                                 $resultRow = 0;
-                                $arrayCollection = array();
+                                //$arrayCollection = array();
                                 while ($statementPrepare->fetch()) {
                                     $array[$resultRow] = array();
                                     foreach ($dataArray as $dataKey => $dataValue) {
                                         $array[$resultRow][$dataKey] = $dataValue;
-                                        $arrayCollection[$dataKey] = $dataValue;
-                                        $resultRow++;
+                                        //$arrayCollection[$dataKey] = $dataValue;
                                     }
+                                    $resultRow++;
                                 }
                                 if (isset($array) && is_array($array) && count($array)) {
-                                    $this->mysqlPreparedResult = $arrayCollection;
+                                    $this->mysqlPreparedResult = $array;
                                     $this->mysqlAffectedRows = $resultRow;
 
                                     return true;
