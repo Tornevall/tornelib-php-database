@@ -9,6 +9,8 @@ namespace TorneLIB\Module;
  */
 class Database
 {
+    private $CONFIG;
+
     /**
      * Database constructor.
      * @sice 6.1.0

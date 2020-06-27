@@ -11,4 +11,3 @@ namespace TorneLIB;
 class MODULE_DATABASE extends Module\Database
 {
 }
-

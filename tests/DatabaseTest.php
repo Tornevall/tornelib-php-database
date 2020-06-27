@@ -10,7 +10,7 @@ require_once(__DIR__ . '/../vendor/autoload.php');
 
 // Initializer.
 if (!file_exists(__DIR__ . '/config.json')) {
-    copy(
+    @copy(
         __DIR__ . '/config.json.sample',
         __DIR__ . '/config.json'
     );
