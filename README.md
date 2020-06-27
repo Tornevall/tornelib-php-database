@@ -1,6 +1,7 @@
 # tornelib-php-database 6.1
 
-This is the latest update of the tornelib database driver.
+The rewritten database driver for the tornelib-series.
+Written to autoselect proper driver regardless of system content. 
 
 
 ## To-Do
