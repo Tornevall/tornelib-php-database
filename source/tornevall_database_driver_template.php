@@ -26,9 +26,9 @@ class libdriver_database_template implements libdriver_database_interface
     /** @var Predefined datbase name to connect to */
     private $serverDatabaseName;
 
-    function __construct(
+    public function __construct(
         $serverIdentifier = '',
-        $serverOptions = array(),
+        $serverOptions = [],
         $serverHostAddr = null,
         $serverUsername = null,
         $serverPassword = null
@@ -64,7 +64,7 @@ class libdriver_database_template implements libdriver_database_interface
      *
      * @param array $serverOptions
      */
-    public function setServerOptions($serverOptions = array())
+    public function setServerOptions($serverOptions = [])
     {
         if (is_array($serverOptions) && count($serverOptions)) {
             $this->serverOptions = $serverOptions;
@@ -206,7 +206,7 @@ class libdriver_database_template implements libdriver_database_interface
      */
     public function connect(
         $serverIdentifier = '',
-        $serverOptions = array(),
+        $serverOptions = [],
         $serverHostAddr = null,
         $serverUsername = null,
         $serverPassword = null
@@ -228,22 +228,22 @@ class libdriver_database_template implements libdriver_database_interface
         // TODO: Implement query_raw() method.
     }
 
-    public function query($queryString = '', $parameters = array())
+    public function query($queryString = '', $parameters = [])
     {
         // TODO: Implement query() method.
     }
 
-    public function query_first($queryString = '', $parameters = array())
+    public function query_first($queryString = '', $parameters = [])
     {
         // TODO: Implement query_first() method.
     }
 
-    public function query_prepare_first($queryString = '', $parameters = array())
+    public function query_prepare_first($queryString = '', $parameters = [])
     {
         // TODO: Implement query_prepare_first() method.
     }
 
-    public function query_prepare($queryString = '', $parameters = array(), $tests = array())
+    public function query_prepare($queryString = '', $parameters = [], $tests = [])
     {
         // TODO: Implement query_prepare() method.
     }
@@ -262,5 +262,4 @@ class libdriver_database_template implements libdriver_database_interface
     {
         // TODO: Implement getLastInsertId() method.
     }
-
 }
