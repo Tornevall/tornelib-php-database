@@ -3,8 +3,9 @@
     "description": "TorneLIB - Generic database driver for MySQL, PDO, etc",
     "minimum-stability": "stable",
     "license": "Apache-2.0",
+    "version": "6.1.0",
     "require": {
-        "php": ">=5.3"
+        "tornevall/tornelib-php-errorhandler": "6.1.*"
     },
     "authors": [
         {
@@ -15,15 +16,8 @@
         }
     ],
     "autoload": {
-        "files": [
-            "source/tornevall_database_abstracts.php",
-            "source/tornevall_database_interface.php",
-            "source/tornevall_database.php",
-            "source/tornevall_database_driver_mysql.php"
-        ],
         "psr-4": {
-            "TorneLIB\\": "source/"
+            "TorneLIB\\": "src/"
         }
     }
 }
-

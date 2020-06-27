@@ -3,4 +3,5 @@ composer.lock
 /vendor/
 .idea
 Makefile
-source/tornevall_database_old.php
+source
+.php_cs.cache
