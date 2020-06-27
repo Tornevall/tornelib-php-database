@@ -25,7 +25,7 @@ require_once __DIR__ . "/tornevall_database_abstracts.php";
 require_once __DIR__ . "/tornevall_database_interface.php";
 require_once __DIR__ . "/tornevall_database_driver_mysql.php";
 
-if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE')) {
+if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE_DEPRECATED')) {
 
     /**
      * Class TorneLIB_Database
@@ -36,7 +36,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
      * @package TorneLIB
      * @version 6.0.4
      */
-    class MODULE_DATABASE implements libdriver_database_interface
+    class MODULE_DATABASE_DEPRECATED implements libdriver_database_interface
     {
 
         /** @var Identifier name */
@@ -569,8 +569,8 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
     }
 }
 
-if (!class_exists('TorneLIB_Database') && !class_exists('TorneLIB\TorneLIB_Database')) {
-    class TorneLIB_Database extends MODULE_DATABASE
+if (!class_exists('TorneLIB_Database') && !class_exists('TorneLIB\TorneLIB_DatabaseDEPRECATED')) {
+    class TorneLIB_DatabaseDEPRECATED extends MODULE_DATABASE_DEPRECATED
     {
     }
 }
