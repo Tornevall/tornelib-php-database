@@ -1,6 +1,6 @@
 <?php
 
-namespace TorneLIB\Module\Interfaces;
+namespace TorneLIB\Model\Interfaces;
 
 use TorneLIB\Module\Config\DatabaseConfig;
 
@@ -26,6 +26,12 @@ interface DatabaseInterface
      * @return DatabaseConfig
      */
     public function getConfig();
+
+    /**
+     * @param DatabaseConfig $databaseConfig
+     * @return mixed
+     */
+    public function setConfig($databaseConfig);
 
     /**
      * @return int
@@ -56,6 +62,22 @@ interface DatabaseInterface
      * @return mixed
      */
     public function setDatabase($schemaName);
+
+    /**
+     * @return string
+     */
+    public function getDatabase();
+
+    /**
+     * @param string $identifierName
+     * @return mixed
+     */
+    public function setIdentifier($identifierName);
+
+    /**
+     * @return string
+     */
+    public function getIdentifier();
 
     /**
      * @param int $portNumber

@@ -5,6 +5,7 @@ namespace TorneLIB\Module;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use TorneLIB\Helpers\Version;
+use TorneLIB\Module\Database\Drivers\MySQL;
 
 require_once(__DIR__ . '/../vendor/autoload.php');
 
@@ -24,8 +25,8 @@ class DatabaseTest extends TestCase
     public function initializer()
     {
         static::assertInstanceOf(
-            Database::class,
-            (new Database())
+            MySQL::class,
+            (new MySQL())
         );
     }
 
@@ -39,5 +40,16 @@ class DatabaseTest extends TestCase
         static::expectException(Exception::class);
 
         Version::getRequiredVersion('9999');
+    }
+
+    /**
+     * @test
+     */
+    public function setIdentifier()
+    {
+        static::assertEquals(
+            'theIdentifier',
+            (new MySQL())->setIdentifier('theIdentifier')->getIdentifier()
+        );
     }
 }

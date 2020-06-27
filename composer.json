@@ -5,7 +5,8 @@
     "version": "6.1.0",
     "require": {
         "tornevall/tornelib-php-errorhandler": "6.1.*",
-        "tornevall/tornelib-php-version": ">= 6.1.0"
+        "tornevall/tornelib-php-version": ">= 6.1.0",
+        "tornevall/tornelib-php-utils": "6.1.*"
     },
     "authors": [
         {
