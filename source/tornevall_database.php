@@ -38,7 +38,6 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
      */
     class MODULE_DATABASE implements libdriver_database_interface
     {
-
         /** @var Identifier name */
         private $SERVER_IDENTIFIER;
         /** @var Options in */
@@ -82,9 +81,9 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @param bool $connect Connect on construct
          * @throws \Exception
          */
-        function __construct(
+        public function __construct(
             $serverIdentifier = '',
-            $serverOptions = array(),
+            $serverOptions = [],
             $serverHostAddr = null,
             $serverUsername = null,
             $serverPassword = null,
@@ -93,7 +92,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
             $connect = false
         ) {
             if (is_null($serverOptions)) {
-                $serverOptions = array();
+                $serverOptions = [];
             }
             $this->setServerIdentifier($serverIdentifier);
             $this->setServerOptions($serverOptions);
@@ -107,8 +106,13 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
             }
 
             if (!empty($serverHostAddr) && !empty($serverUsername) && !empty($serverPassword) && $connect) {
-                $this->connect($this->getServerIdentifier(), $this->getServerOptions(), $this->getServerHostAddr(),
-                    $this->getServerUserName(), $this->getServerPassword());
+                $this->connect(
+                    $this->getServerIdentifier(),
+                    $this->getServerOptions(),
+                    $this->getServerHostAddr(),
+                    $this->getServerUserName(),
+                    $this->getServerPassword()
+                );
                 if (!empty($databaseName)) {
                     $this->db($databaseName);
                 }
@@ -135,8 +139,13 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
                 }
             }
             if ($this->SERVER_TYPE === TORNEVALL_DATABASE_TYPES::MYSQL) {
-                $this->SERVER_RESOURCE = new libdriver_mysql($this->getServerIdentifier(), $this->getServerOptions(),
-                    $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword());
+                $this->SERVER_RESOURCE = new libdriver_mysql(
+                    $this->getServerIdentifier(),
+                    $this->getServerOptions(),
+                    $this->getServerHostAddr(),
+                    $this->getServerUserName(),
+                    $this->getServerPassword()
+                );
                 $this->SERVER_RESOURCE->setPort($this->getPort());
                 $this->SERVER_RESOURCE->setDatabase($this->getDatabase());
                 if ($this->SERVER_DRIVER_TYPE !== TORNEVALL_DATABASE_DRIVERS::DRIVER_TYPE_NONE) {
@@ -189,12 +198,12 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          *
          * @param array $serverOptions
          */
-        public function setServerOptions($serverOptions = array())
+        public function setServerOptions($serverOptions = [])
         {
             if (is_array($serverOptions) && count($serverOptions)) {
                 $this->SERVER_OPTIONS = $serverOptions;
             } else {
-                $this->SERVER_OPTIONS = array();
+                $this->SERVER_OPTIONS = [];
             }
         }
 
@@ -359,7 +368,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          */
         public function connect(
             $serverIdentifier = '',
-            $serverOptions = array(),
+            $serverOptions = [],
             $serverHostAddr = null,
             $serverUsername = null,
             $serverPassword = null,
@@ -377,8 +386,13 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
                 $this->SERVER_RESOURCE->setDatabase();
             }
 
-            $this->SERVER_RESOURCE_CONNECTOR = $this->SERVER_RESOURCE->connect($this->getServerIdentifier(), $this->getServerOptions(),
-                $this->getServerHostAddr(), $this->getServerUserName(), $this->getServerPassword());
+            $this->SERVER_RESOURCE_CONNECTOR = $this->SERVER_RESOURCE->connect(
+                $this->getServerIdentifier(),
+                $this->getServerOptions(),
+                $this->getServerHostAddr(),
+                $this->getServerUserName(),
+                $this->getServerPassword()
+            );
 
             return $this->SERVER_RESOURCE_CONNECTOR;
         }
@@ -463,7 +477,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @return libdriver_database_interface
          * @throws \Exception
          */
-        public function query($queryString = '', $parameters = array())
+        public function query($queryString = '', $parameters = [])
         {
             /** @var libdriver_database_interface $result */
             $result = null;
@@ -482,7 +496,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @return libdriver_database_interface
          * @throws \Exception
          */
-        public function query_first($queryString = '', $parameters = array(), $singleValueIsPopped = false)
+        public function query_first($queryString = '', $parameters = [], $singleValueIsPopped = false)
         {
             /** @var libdriver_database_interface $result */
             $result = null;
@@ -504,7 +518,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @return libdriver_database_interface
          * @throws \Exception
          */
-        public function query_prepare($queryString = '', $parameters = array(), $tests = array())
+        public function query_prepare($queryString = '', $parameters = [], $tests = [])
         {
             /** @var libdriver_database_interface $result */
             $result = null;
@@ -522,7 +536,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @return libdriver_database_interface
          * @throws \Exception
          */
-        public function query_prepare_first($queryString = '', $parameters = array())
+        public function query_prepare_first($queryString = '', $parameters = [])
         {
             /** @var libdriver_database_interface $result */
             $result = null;
@@ -562,7 +576,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
             if (empty($this->SERVER_RESOURCE)) {
                 $this->initializeDatabaseDriver($this->SERVER_RESOURCE_FORCE_NEW);
             }
-            $result = @call_user_func_array(array($this->SERVER_RESOURCE, $name), $arguments);
+            $result = @call_user_func_array([$this->SERVER_RESOURCE, $name], $arguments);
 
             return $result;
         }

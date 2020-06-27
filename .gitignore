@@ -4,3 +4,4 @@ composer.lock
 .idea
 Makefile
 source/tornevall_database_old.php
+.php_cs.cache

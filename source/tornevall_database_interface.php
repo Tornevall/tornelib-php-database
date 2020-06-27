@@ -29,9 +29,9 @@ if (!interface_exists('libdriver_database_interface') && !interface_exists('Torn
      */
     interface libdriver_database_interface
     {
-        function __construct(
+        public function __construct(
             $serverIdentifier = '',
-            $serverOptions = array(),
+            $serverOptions = [],
             $serverHostAddr = null,
             $serverUsername = null,
             $serverPassword = null
@@ -41,7 +41,7 @@ if (!interface_exists('libdriver_database_interface') && !interface_exists('Torn
 
         public function getServerIdentifier();
 
-        public function setServerOptions($serverOptions = array());
+        public function setServerOptions($serverOptions = []);
 
         public function getServerOptions();
 
@@ -67,7 +67,7 @@ if (!interface_exists('libdriver_database_interface') && !interface_exists('Torn
 
         public function connect(
             $serverIdentifier = '',
-            $serverOptions = array(),
+            $serverOptions = [],
             $serverHostAddr = null,
             $serverUsername = null,
             $serverPassword = null
@@ -79,13 +79,13 @@ if (!interface_exists('libdriver_database_interface') && !interface_exists('Torn
 
         public function query_raw($queryString = '');
 
-        public function query($queryString = '', $parameters = array());
+        public function query($queryString = '', $parameters = []);
 
-        public function query_first($queryString = '', $parameters = array());
+        public function query_first($queryString = '', $parameters = []);
 
-        public function query_prepare_first($queryString = '', $parameters = array());
+        public function query_prepare_first($queryString = '', $parameters = []);
 
-        public function query_prepare($queryString = '', $parameters = array(), $tests = array());
+        public function query_prepare($queryString = '', $parameters = [], $tests = []);
 
         public function fetch($resource = null, $columnArray = true);
 
