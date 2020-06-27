@@ -1,0 +1,12 @@
+{
+    "database": {
+        "servers": {
+            "localhost": {
+                "user": "tornelib",
+                "server": "localhost",
+                "password": "tornelib1337",
+                "schema": "tornelib_tests"
+            }
+        }
+    }
+}
