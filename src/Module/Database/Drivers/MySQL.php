@@ -151,6 +151,25 @@ class MySQL implements DatabaseInterface
         return $this->CONFIG->getServerUser($identifierName);
     }
 
+    /**
+     * @param $userName
+     * @param null $identifierName
+     * @return DatabaseConfig
+     */
+    public function setServerPassword($userName, $identifierName = null)
+    {
+        return $this->CONFIG->setServerPassword($userName, $identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerPassword($identifierName = null)
+    {
+        return $this->CONFIG->getServerPassword($identifierName);
+    }
+
     public function setQuery($queryString, $parameters)
     {
         // TODO: Implement setQuery() method.

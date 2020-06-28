@@ -125,6 +125,14 @@ class DatabaseTest extends TestCase
     /**
      * @test
      */
+    public function setServerPassword()
+    {
+        static::assertEquals('covid-19', (new MySQL())->setServerPassword('covid-19')->getServerPassword());
+    }
+
+    /**
+     * @test
+     */
     public function setServerUserByIdentifier()
     {
         static::assertEquals(

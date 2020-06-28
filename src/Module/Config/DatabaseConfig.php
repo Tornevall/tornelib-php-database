@@ -49,6 +49,7 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverUser = [];
+    private $serverPassword = [];
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -167,6 +168,7 @@ class DatabaseConfig
     /**
      * @param null $identifier
      * @return string
+     * @since 6.1.0
      */
     public function getServerHost($identifier = null)
     {
@@ -178,6 +180,7 @@ class DatabaseConfig
      * @param array $serverHost
      * @param null $identifier
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerHost($serverHost, $identifier = null)
     {
@@ -189,6 +192,7 @@ class DatabaseConfig
     /**
      * @param null $identifier
      * @return null|string
+     * @since 6.1.0
      */
     public function getServerUser($identifier = null)
     {
@@ -200,6 +204,7 @@ class DatabaseConfig
      * @param array $serverUser
      * @param null $identifier
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerUser($serverUser, $identifier = null)
     {
@@ -208,5 +213,27 @@ class DatabaseConfig
         return $this;
     }
 
+    /**
+     * @param null $identifier
+     * @return null|string
+     * @since 6.1.0
+     */
+    public function getServerPassword($identifier = null)
+    {
+        return isset($this->serverPassword[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverPassword[$this->getCurrentIdentifier($identifier)] : null;
+    }
 
+    /**
+     * @param $serverPassword
+     * @param null $identifier
+     * @return DatabaseConfig
+     * @since 6.1.0
+     */
+    public function setServerPassword($serverPassword, $identifier = null)
+    {
+        $this->serverPassword[$this->getCurrentIdentifier($identifier)] = $serverPassword;
+
+        return $this;
+    }
 }

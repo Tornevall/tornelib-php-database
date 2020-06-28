@@ -119,6 +119,19 @@ interface DatabaseInterface
     public function getServerUser($identifierName = null);
 
     /**
+     * @param $password
+     * @param null $identifierName
+     * @return $this
+     */
+    public function setServerPassword($password, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerPassword($identifierName = null);
+
+    /**
      * setQuery (query)
      * @param string $queryString
      * @param array $parameters
