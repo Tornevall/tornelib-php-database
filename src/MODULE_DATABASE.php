@@ -20,14 +20,21 @@ class MODULE_DATABASE implements DatabaseInterface
     private $database;
     private $CONFIG;
 
+    /**
+     * MODULE_DATABASE constructor.
+     */
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
     }
 
+    /**
+     * @param null $identifierName
+     * @return Types|void
+     */
     public function getServerType($identifierName = null)
     {
-        // TODO: Implement getServerType() method.
+        $this->CONFIG->getServerType($identifierName);
     }
 
     /**
@@ -46,7 +53,7 @@ class MODULE_DATABASE implements DatabaseInterface
             $this->database = new MySQL();
         }
 
-        return $this->CONFIG->setDatabase($databaseType);
+        return $this->CONFIG->setDatabase($databaseType, $identifierName);
     }
 
     /**
@@ -145,27 +152,37 @@ class MODULE_DATABASE implements DatabaseInterface
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
         $serverPassword = 'password'
-    ) {
-        // TODO: Implement connect() method.
+    )
+    {
+        return $this->database->connect(
+            $serverIdentifier,
+            $serverOptions,
+            $serverHostAddr,
+            $serverUsername,
+            $serverPassword
+        );
     }
 
     /**
+     * @param $identifierName
+     * @param bool $throwable
      * @return string
      * @throws ExceptionHandler
      */
-    public function getDatabase()
+    public function getDatabase($identifierName, $throwable = true)
     {
-        return $this->CONFIG->getDatabase();
+        return $this->CONFIG->getDatabase($identifierName, $throwable);
     }
 
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
+     * @param null $identifierName
      * @return DatabaseConfig
      */
-    public function setDatabase($schemaName)
+    public function setDatabase($schemaName, $identifierName = null)
     {
-        return $this->CONFIG->setDatabase($schemaName);
+        return $this->CONFIG->setDatabase($schemaName, $identifierName);
     }
 
     /**

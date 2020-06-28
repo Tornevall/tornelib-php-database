@@ -33,6 +33,10 @@ if (!file_exists(__DIR__ . '/config.json')) {
 
 class DatabaseTest extends TestCase
 {
+    private $serverhost = '127.0.0.1';
+    private $username = 'tornelib';
+    private $password = 'tornelib1337';
+
     /**
      * @test
      */
@@ -254,7 +258,7 @@ class DatabaseTest extends TestCase
      * @throws ExceptionHandler
      * @throws JsonMapper_Exception
      */
-    public function connect()
+    public function connectMysqlISuccessAndManual()
     {
         $this->initDefault();
         // Return $this instead of boolean.
@@ -264,9 +268,9 @@ class DatabaseTest extends TestCase
         $configured->connect(
             'manual',
             null,
-            '127.0.0.1',
-            'tornelib',
-            'tornelib1337'
+            $this->serverhost,
+            $this->username,
+            $this->password
         );
         $configured->setDatabase('tornelib_tests');
         $switched = $configured->getDatabase();
@@ -299,6 +303,100 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             get_class($conf) === Servers::class &&
             $localhostConfigurationData->getPassword() === 'tornelib1337'
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectMysqlIFail()
+    {
+        /** @noinspection DynamicInvocationViaScopeResolutionInspection */
+        static::expectException(ExceptionHandler::class);
+        (new MySQL())->connect(
+            'manual',
+            null,
+            '127.0.0.1',
+            sprintf('fail%s', sha1(uniqid('', true))),
+            'tornelib1337'
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectDeprecatedSuccess()
+    {
+        $sql = new MySQL();
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED);
+        static::assertTrue($sql->connect());
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectFailDeprecated()
+    {
+        static::expectException(ExceptionHandler::class);
+
+        $sql = new MySQL();
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED);
+        $sql->connect(
+            null,
+            null,
+            '127.0.0.1',
+            sprintf('fail%s', sha1(uniqid('', true))),
+            'tornelib1337'
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectManualSuccess()
+    {
+        $configured = new MySQL();
+        $configured->connect(
+            null,
+            null,
+            $this->serverhost,
+            $this->username,
+            $this->password
+        );
+        $configured->setDatabase('tornelib_tests');
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectPdo()
+    {
+        $sql = new MySQL();
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        static::assertTrue($sql->connect());
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectPdoFail()
+    {
+        static::expectException(ExceptionHandler::class);
+
+        $sql = new MySQL();
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $sql->connect(
+            null,
+            null,
+            '127.0.0.1',
+            sprintf('fail%s', sha1(uniqid('', true))),
+            'tornelib1337'
         );
     }
 }

@@ -49,16 +49,19 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverHost = [];
+
     /**
      * @var array $serverUser
      * @since 6.1.0
      */
     private $serverUser = [];
+
     /**
      * @var array
      * @since 6.1.0
      */
     private $serverPassword = [];
+
     /**
      * @var array
      * @since 6.1.0
@@ -66,24 +69,29 @@ class DatabaseConfig
     private $serverType = [
         'default' => Types::MYSQL,
     ];
+
     /**
      * @var array
      * @since 6.1.0
      */
     private $serverOptions = [];
+
     /**
      * @var array Collection of established connection.
      * @since 6.1.0
      */
     private $connection = [];
+
     /**
      * @var int $defaultTimeout Default connect timeout if any.
      */
     private $defaultTimeout = 10;
+
     /**
      * @var array $timeout Server timeouts.
      */
     private $timeout = [];
+
     /**
      * @var int $preferredDriver Preferred database driver.
      * @since 6.1.0
@@ -92,6 +100,10 @@ class DatabaseConfig
         'default' => Drivers::DRIVER_OR_METHOD_UNAVAILABLE,
     ];
 
+    /**
+     * DatabaseConfig constructor.
+     * @todo 6.0-compat.
+     */
     public function __construct()
     {
         // Reset.
@@ -109,8 +121,9 @@ class DatabaseConfig
      */
     public function getDatabase($identifier = null, $throwable = true)
     {
-        $return = isset($this->database[$this->getCurrentIdentifier($identifier)]) ?
-            $this->database[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        $return = isset($this->database[$currentIdentifier]) ?
+            $this->database[$currentIdentifier] : null;
 
         // Make sure the variable exists before using ikt.
         if ($throwable && is_null($return)) {
@@ -142,6 +155,7 @@ class DatabaseConfig
     /**
      * @param null $identifier
      * @return string
+     * @since 6.1.0
      */
     public function getCurrentIdentifier($identifier = null)
     {
@@ -196,8 +210,9 @@ class DatabaseConfig
      */
     public function getServerPort($identifier = null)
     {
-        return isset($this->serverPort[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverPort[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverPort[$currentIdentifier]) ?
+            $this->serverPort[$currentIdentifier] : null;
     }
 
     /**
@@ -220,8 +235,9 @@ class DatabaseConfig
      */
     public function getServerHost($identifier = null)
     {
-        return isset($this->serverHost[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverHost[$this->getCurrentIdentifier($identifier)] : '127.0.0.1';
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverHost[$currentIdentifier]) ?
+            $this->serverHost[$currentIdentifier] : '127.0.0.1';
     }
 
     /**
@@ -244,8 +260,9 @@ class DatabaseConfig
      */
     public function getServerUser($identifier = null)
     {
-        return isset($this->serverUser[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverUser[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverUser[$currentIdentifier]) ?
+            $this->serverUser[$currentIdentifier] : null;
     }
 
     /**
@@ -268,8 +285,9 @@ class DatabaseConfig
      */
     public function getServerPassword($identifier = null)
     {
-        return isset($this->serverPassword[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverPassword[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverPassword[$currentIdentifier]) ?
+            $this->serverPassword[$currentIdentifier] : null;
     }
 
     /**
@@ -292,8 +310,9 @@ class DatabaseConfig
      */
     public function getServerType($identifier = null)
     {
-        return isset($this->serverType[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverType[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverType[$currentIdentifier]) ?
+            $this->serverType[$currentIdentifier] : null;
     }
 
     /**
@@ -316,8 +335,9 @@ class DatabaseConfig
      */
     public function getServerOptions($identifier = null)
     {
-        return isset($this->serverOptions[$this->getCurrentIdentifier($identifier)]) ?
-            $this->serverOptions[$this->getCurrentIdentifier($identifier)] : [];
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->serverOptions[$currentIdentifier]) ?
+            $this->serverOptions[$currentIdentifier] : [];
     }
 
     /**
@@ -328,12 +348,13 @@ class DatabaseConfig
      */
     public function setServerOptions($serverOptions, $identifier = null)
     {
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
         if (is_array($serverOptions)) {
-            if (!isset($this->serverOptions[$this->getCurrentIdentifier($identifier)])) {
-                $this->serverOptions[$this->getCurrentIdentifier($identifier)] = [];
+            if (!isset($this->serverOptions[$currentIdentifier])) {
+                $this->serverOptions[$currentIdentifier] = [];
             }
             foreach ($serverOptions as $key => $value) {
-                $this->serverOptions[$this->getCurrentIdentifier($identifier)][$key] = $value;
+                $this->serverOptions[$currentIdentifier][$key] = $value;
             }
         } else {
             return $this->setServerOptions([], $identifier);
@@ -348,6 +369,7 @@ class DatabaseConfig
      * @return mixed
      * @throws ExceptionHandler
      * @throws JsonMapper_Exception
+     * @since 6.1.0
      */
     public function getConfig($jsonFile)
     {
@@ -394,6 +416,7 @@ class DatabaseConfig
      * @param $function
      * @param $jsonFile
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function throwNoConfig($class, $function, $jsonFile)
     {
@@ -428,6 +451,7 @@ class DatabaseConfig
     /**
      * @param $json
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function throwWrongConfigClass($json)
     {
@@ -448,11 +472,13 @@ class DatabaseConfig
      * @param $identifier
      * @return array
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function getConnection($identifier)
     {
-        $return = isset($this->connection[$this->getCurrentIdentifier($identifier)]) ?
-            $this->connection[$this->getCurrentIdentifier($identifier)] : null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        $return = isset($this->connection[$currentIdentifier]) ?
+            $this->connection[$currentIdentifier] : null;
 
         if (is_null($return)) {
             throw new ExceptionHandler(
@@ -469,7 +495,9 @@ class DatabaseConfig
 
     /**
      * @param array $connection
+     * @param null $identifier
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setConnection($connection, $identifier = null)
     {
@@ -481,17 +509,20 @@ class DatabaseConfig
     /**
      * @param null $identifier
      * @return int
+     * @since 6.1.0
      */
     public function getPreferredDriver($identifier = null)
     {
-        return isset($this->preferredDriver[$this->getCurrentIdentifier($identifier)]) ?
-            $this->preferredDriver[$this->getCurrentIdentifier($identifier)] : Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->preferredDriver[$currentIdentifier]) ?
+            $this->preferredDriver[$currentIdentifier] : Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
     }
 
     /**
      * @param int $preferredDriver
      * @param null $identifier
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setPreferredDriver($preferredDriver, $identifier = null)
     {
@@ -523,11 +554,13 @@ class DatabaseConfig
     /**
      * @param $identifier
      * @return int
+     * @since 6.1.0
      */
     public function getTimeout($identifier)
     {
-        return isset($this->timeout[$this->getCurrentIdentifier($identifier)]) ?
-            (int)$this->timeout[$this->getCurrentIdentifier($identifier)] : (int)$this->defaultTimeout;
+        $currentIdentifier = $this->getCurrentIdentifier($identifier);
+        return isset($this->timeout[$currentIdentifier]) ?
+            (int)$this->timeout[$currentIdentifier] : (int)$this->defaultTimeout;
 
     }
 
@@ -535,6 +568,7 @@ class DatabaseConfig
      * @param int $timeout
      * @param null $identifier
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setTimeout($timeout, $identifier = null)
     {
