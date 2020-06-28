@@ -50,10 +50,26 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverUser = [];
+
+    /**
+     * @var array
+     * @since 6.1.0
+     */
     private $serverPassword = [];
+
+    /**
+     * @var array
+     * @since 6.1.0
+     */
     private $serverType = [
         'default' => Types::MYSQL,
     ];
+
+    /**
+     * @var array
+     * @since 6.1.0
+     */
+    private $serverOptions = [];
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -157,7 +173,7 @@ class DatabaseConfig
     }
 
     /**
-     * @param array $serverPort
+     * @param int $serverPort
      * @param null $identifier
      * @return DatabaseConfig
      * @since 6.1.0
@@ -261,6 +277,30 @@ class DatabaseConfig
     public function setServerType($serverType = Types::MYSQL, $identifier = null)
     {
         $this->serverType[$this->getCurrentIdentifier($identifier)] = $serverType;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifier
+     * @return array
+     * @since 6.1.0
+     */
+    public function getServerOptions($identifier = null)
+    {
+        return isset($this->serverOptions[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverOptions[$this->getCurrentIdentifier($identifier)] : [];
+    }
+
+    /**
+     * @param $serverOptions
+     * @param null $identifier
+     * @return DatabaseConfig
+     * @since 6.1.0
+     */
+    public function setServerOptions($serverOptions, $identifier = null)
+    {
+        $this->serverOptions[$this->getCurrentIdentifier($identifier)] = $serverOptions;
 
         return $this;
     }

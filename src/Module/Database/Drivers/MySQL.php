@@ -108,7 +108,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @param null $identifierName
-     * @return array
+     * @return int|string
      */
     public function getServerPort($identifierName = null)
     {
@@ -188,6 +188,25 @@ class MySQL implements DatabaseInterface
     public function getServerType($identifierName = null)
     {
         return $this->CONFIG->getServerType($identifierName);
+    }
+
+    /**
+     * @param $serverOptions
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerOptions($serverOptions, $identifierName = null)
+    {
+        return $this->CONFIG->setServerOptions($serverOptions, $identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function getServerOptions($identifierName = null)
+    {
+        return $this->CONFIG->getServerOptions($identifierName);
     }
 
     public function setQuery($queryString, $parameters)
