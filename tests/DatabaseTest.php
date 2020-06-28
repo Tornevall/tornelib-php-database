@@ -1,18 +1,24 @@
 <?php
 
+/** @noinspection PhpComposerExtensionStubsInspection */
+
 namespace TorneLIB\Module;
 
 use Exception;
+use JsonMapper_Exception;
 use PHPUnit\Framework\TestCase;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
+use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
 use TorneLIB\MODULE_DATABASE;
 
 require_once(__DIR__ . '/../vendor/autoload.php');
+
+@unlink(__DIR__ . '/config.json');
 
 // Initializer.
 if (!file_exists(__DIR__ . '/config.json')) {
@@ -189,6 +195,65 @@ class DatabaseTest extends TestCase
             $unimpl &&
             get_class($db) === MODULE_DATABASE::class &&
             get_class($db->getHandle()) === MySQL::class
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function connect()
+    {
+        $this->initDefault();
+    }
+
+    private function initDefault()
+    {
+        $this->getConfig();
+    }
+
+    /**
+     * Configurations.
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     */
+    private function getConfig()
+    {
+        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
+        $localhostConfigurationData = $conf->getServer('localhost');
+
+        static::assertTrue(
+            get_class($conf) === Servers::class &&
+            $localhostConfigurationData->getPassword() === 'tornelib1337'
+        );
+    }
+
+
+    /**
+     * @test
+     * @return mixed
+     * @throws ExceptionHandler
+     */
+    public function getConfigStates()
+    {
+        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
+        $notThere = null;
+        $emptyJson = null;
+        try {
+            (new DatabaseConfig())->getConfig('not-there');
+        } catch (ExceptionHandler $e) {
+            $notThere = $e->getCode();
+        }
+
+        try {
+            (new DatabaseConfig())->getConfig(__DIR__ . '/empty.json');
+        } catch (ExceptionHandler $e) {
+            $emptyJson = $e->getCode();
+        }
+
+        static::assertTrue(
+            is_array($conf) &&
+            $notThere === 404 &&
+            $emptyJson === Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
         );
     }
 }

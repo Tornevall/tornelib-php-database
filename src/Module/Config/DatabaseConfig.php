@@ -2,8 +2,12 @@
 
 namespace TorneLIB\Module\Config;
 
+use JsonMapper;
+use JsonMapper_Exception;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Model\Database\Configuration;
+use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 
 /**
@@ -70,6 +74,11 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverOptions = [];
+
+    /**
+     * @var Servers $serverList
+     */
+    private $serverList;
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -303,5 +312,110 @@ class DatabaseConfig
         $this->serverOptions[$this->getCurrentIdentifier($identifier)] = $serverOptions;
 
         return $this;
+    }
+
+    /**
+     *
+     * @param $jsonFile
+     * @return mixed
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     */
+    public function getConfig($jsonFile)
+    {
+        $return = null;
+
+        if (file_exists($jsonFile)) {
+            $return = $this->getConfigByJson($jsonFile);
+        } else {
+            throw new ExceptionHandler(
+                sprintf(
+                    'Configuration file %s not found.',
+                    $jsonFile
+                ),
+                404
+            );
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $jsonFile
+     * @return Servers
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     * @since 6.1.0
+     */
+    private function getConfigByJson($jsonFile)
+    {
+        /** @noinspection PhpComposerExtensionStubsInspection */
+        $map = @json_decode(
+            @file_get_contents($jsonFile),
+            false
+        );
+        if (is_null($map)) {
+            $this->throwNoConfig(__CLASS__, __FUNCTION__, $jsonFile);
+        }
+
+        return $this->getMappedJson($map);
+    }
+
+    /**
+     * @param $class
+     * @param $function
+     * @param $jsonFile
+     * @throws ExceptionHandler
+     */
+    private function throwNoConfig($class, $function, $jsonFile)
+    {
+        throw new ExceptionHandler(
+            sprintf(
+                'Function %s::%s called by file %s did not contain any configuration.',
+                $class,
+                $function,
+                $jsonFile
+            ),
+            Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
+        );
+    }
+
+    /**
+     * @param $mapFromJson
+     * @return Servers
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     * @since 6.1.0
+     */
+    private function getMappedJson($mapFromJson)
+    {
+        $json = (new JsonMapper())->map(
+            $mapFromJson,
+            new Configuration()
+        );
+
+        $this->throwWrongConfigClass($json);
+        $this->serverList = $json->getDatabase();
+
+        return $this->serverList;
+    }
+
+    /**
+     * @param $json
+     * @throws ExceptionHandler
+     */
+    private function throwWrongConfigClass($json)
+    {
+        if (get_class($json) !== Configuration::class) {
+            throw new ExceptionHandler(
+                sprintf(
+                    '%s configuration class mismatch: %s, expected: %s.',
+                    __CLASS__,
+                    get_class($json),
+                    Configuration::class
+                ),
+                Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
+            );
+        }
     }
 }
