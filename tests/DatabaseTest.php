@@ -225,7 +225,7 @@ class DatabaseTest extends TestCase
         }
 
         static::assertTrue(
-            is_array($conf) &&
+            get_class($conf) === Servers::class &&
             $notThere === 404 &&
             $emptyJson === Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
         );
@@ -257,6 +257,24 @@ class DatabaseTest extends TestCase
     public function connect()
     {
         $this->initDefault();
+        // Return $this instead of boolean.
+        //Flag::setFlag('SQLCHAIN', true);
+        $sql = (new MySQL())->connect();
+        $configured = new MySQL();
+        $configured->connect(
+            'manual',
+            null,
+            '127.0.0.1',
+            'tornelib',
+            'tornelib1337'
+        );
+        $configured->setDatabase('tornelib_tests');
+        $switched = $configured->getDatabase();
+
+        static::assertTrue(
+            $sql &&
+            $switched === 'tornelib_tests'
+        );
     }
 
     /**
@@ -283,5 +301,4 @@ class DatabaseTest extends TestCase
             $localhostConfigurationData->getPassword() === 'tornelib1337'
         );
     }
-
 }

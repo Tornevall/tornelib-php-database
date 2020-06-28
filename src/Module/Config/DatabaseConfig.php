@@ -7,6 +7,7 @@ use JsonMapper_Exception;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Model\Database\Configuration;
+use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 
@@ -48,19 +49,16 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverHost = [];
-
     /**
      * @var array $serverUser
      * @since 6.1.0
      */
     private $serverUser = [];
-
     /**
      * @var array
      * @since 6.1.0
      */
     private $serverPassword = [];
-
     /**
      * @var array
      * @since 6.1.0
@@ -68,28 +66,54 @@ class DatabaseConfig
     private $serverType = [
         'default' => Types::MYSQL,
     ];
-
     /**
      * @var array
      * @since 6.1.0
      */
     private $serverOptions = [];
+    /**
+     * @var array Collection of established connection.
+     * @since 6.1.0
+     */
+    private $connection = [];
+    /**
+     * @var int $defaultTimeout Default connect timeout if any.
+     */
+    private $defaultTimeout = 10;
+    /**
+     * @var array $timeout Server timeouts.
+     */
+    private $timeout = [];
+    /**
+     * @var int $preferredDriver Preferred database driver.
+     * @since 6.1.0
+     */
+    private $preferredDriver = [
+        'default' => Drivers::DRIVER_OR_METHOD_UNAVAILABLE,
+    ];
+
+    public function __construct()
+    {
+        // Reset.
+        $this->serverOptions = [];
+    }
 
     /**
      * Get name of chosen database for connection ("use schema").
      *
      * @param string $identifier
+     * @param bool $throwable
      * @return string
      * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function getDatabase($identifier = null)
+    public function getDatabase($identifier = null, $throwable = true)
     {
         $return = isset($this->database[$this->getCurrentIdentifier($identifier)]) ?
             $this->database[$this->getCurrentIdentifier($identifier)] : null;
 
         // Make sure the variable exists before using ikt.
-        if (is_null($return)) {
+        if ($throwable && is_null($return)) {
             throw new ExceptionHandler(
                 sprintf(
                     'Database is not set for connection "%s".',
@@ -119,7 +143,7 @@ class DatabaseConfig
      * @param null $identifier
      * @return string
      */
-    private function getCurrentIdentifier($identifier = null)
+    public function getCurrentIdentifier($identifier = null)
     {
         $return = $this->getIdentifier();
         if (!empty($identifier) && !is_null($identifier)) {
@@ -304,7 +328,16 @@ class DatabaseConfig
      */
     public function setServerOptions($serverOptions, $identifier = null)
     {
-        $this->serverOptions[$this->getCurrentIdentifier($identifier)] = $serverOptions;
+        if (is_array($serverOptions)) {
+            if (!isset($this->serverOptions[$this->getCurrentIdentifier($identifier)])) {
+                $this->serverOptions[$this->getCurrentIdentifier($identifier)] = [];
+            }
+            foreach ($serverOptions as $key => $value) {
+                $this->serverOptions[$this->getCurrentIdentifier($identifier)][$key] = $value;
+            }
+        } else {
+            return $this->setServerOptions([], $identifier);
+        }
 
         return $this;
     }
@@ -409,5 +442,104 @@ class DatabaseConfig
                 Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
             );
         }
+    }
+
+    /**
+     * @param $identifier
+     * @return array
+     * @throws ExceptionHandler
+     */
+    public function getConnection($identifier)
+    {
+        $return = isset($this->connection[$this->getCurrentIdentifier($identifier)]) ?
+            $this->connection[$this->getCurrentIdentifier($identifier)] : null;
+
+        if (is_null($return)) {
+            throw new ExceptionHandler(
+                sprintf(
+                    'Database connection error: %s has not been initialized yet.',
+                    $identifier
+                ),
+                Constants::LIB_DATABASE_NO_CONNECTION_INITIALIZED
+            );
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param array $connection
+     * @return DatabaseConfig
+     */
+    public function setConnection($connection, $identifier = null)
+    {
+        $this->connection[$this->getCurrentIdentifier($identifier)] = $connection;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifier
+     * @return int
+     */
+    public function getPreferredDriver($identifier = null)
+    {
+        return isset($this->preferredDriver[$this->getCurrentIdentifier($identifier)]) ?
+            $this->preferredDriver[$this->getCurrentIdentifier($identifier)] : Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+    }
+
+    /**
+     * @param int $preferredDriver
+     * @param null $identifier
+     * @return DatabaseConfig
+     */
+    public function setPreferredDriver($preferredDriver, $identifier = null)
+    {
+        $this->preferredDriver[$this->getCurrentIdentifier($identifier)] = $preferredDriver;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     * @since 6.1.0
+     * @noinspection PhpUnused
+     */
+    public function getDefaultTimeout()
+    {
+        return $this->defaultTimeout;
+    }
+
+    /**
+     * @param int $defaultTimeout
+     * @since 6.1.0
+     * @noinspection PhpUnused
+     */
+    public function setDefaultTimeout($defaultTimeout)
+    {
+        $this->defaultTimeout = $defaultTimeout;
+    }
+
+    /**
+     * @param $identifier
+     * @return int
+     */
+    public function getTimeout($identifier)
+    {
+        return isset($this->timeout[$this->getCurrentIdentifier($identifier)]) ?
+            (int)$this->timeout[$this->getCurrentIdentifier($identifier)] : (int)$this->defaultTimeout;
+
+    }
+
+    /**
+     * @param int $timeout
+     * @param null $identifier
+     * @return DatabaseConfig
+     */
+    public function setTimeout($timeout, $identifier = null)
+    {
+        $this->timeout[$this->getCurrentIdentifier($identifier)] = (int)$timeout;
+
+        return $this;
     }
 }

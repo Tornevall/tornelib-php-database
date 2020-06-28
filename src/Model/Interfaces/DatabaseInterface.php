@@ -60,14 +60,17 @@ interface DatabaseInterface
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
+     * @param null $identifierName
      * @return mixed
      */
-    public function setDatabase($schemaName);
+    public function setDatabase($schemaName, $identifierName = null);
 
     /**
+     * @param $identifierName
+     * @param bool $throwable
      * @return string
      */
-    public function getDatabase();
+    public function getDatabase($identifierName, $throwable = false);
 
     /**
      * @param string $identifierName

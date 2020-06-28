@@ -1,7 +1,10 @@
 <?php
 
+/** @noinspection PhpComposerExtensionStubsInspection */
+
 namespace TorneLIB\Module\Database\Drivers;
 
+use TorneLIB\Config\Flag;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Model\Database\Drivers;
@@ -20,8 +23,7 @@ class MySQL implements DatabaseInterface
      * @var DatabaseConfig $CONFIG
      */
     private $CONFIG;
-
-    private $preferredDriver = Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+    private $initDriver;
 
     /**
      * MySQL constructor.
@@ -30,29 +32,31 @@ class MySQL implements DatabaseInterface
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
-
         $this->getInitializedDriver();
     }
 
     /**
      * @param null $forceDriver
+     * @param null $identifier
      * @return int
      * @throws ExceptionHandler
      */
-    private function getInitializedDriver($forceDriver = null)
+    private function getInitializedDriver($forceDriver = null, $identifier = null)
     {
+        $this->initDriver[$identifier] = true;
+
         if ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_IMPROVED) &&
             Security::getCurrentFunctionState('mysqli_connect', false)
         ) {
-            $this->preferredDriver = Drivers::DRIVER_MYSQL_IMPROVED;
+            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_IMPROVED, $identifier);
         } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_IMPROVED) &&
             Security::getCurrentFunctionState('mysql_connect', false)
         ) {
-            $this->preferredDriver = Drivers::DRIVER_MYSQL_DEPRECATED;
+            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED, $identifier);
         } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_PDO) &&
             Security::getCurrentClassState('PDO', false)
         ) {
-            $this->preferredDriver = Drivers::DRIVER_MYSQL_PDO;
+            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO, $identifier);
         } else {
             throw new ExceptionHandler(
                 sprintf(
@@ -63,29 +67,12 @@ class MySQL implements DatabaseInterface
             );
         }
 
-        return $this->preferredDriver;
+        return $this->CONFIG->getPreferredDriver();
     }
 
     /**
-     * @return int
+     * @return DatabaseConfig
      */
-    public function getPreferredDriver()
-    {
-        return $this->preferredDriver;
-    }
-
-    /**
-     * @param int $preferDriver
-     * @return $this
-     * @throws ExceptionHandler
-     */
-    public function setPreferredDriver($preferDriver = Drivers::DRIVER_MYSQL_IMPROVED)
-    {
-        $this->getInitializedDriver($preferDriver);
-
-        return $this;
-    }
-
     public function getConfig()
     {
         return $this->CONFIG;
@@ -107,34 +94,226 @@ class MySQL implements DatabaseInterface
         // TODO: Implement getLastInsertId() method.
     }
 
+    /**
+     * @param string $serverIdentifier
+     * @param array $serverOptions
+     * @param string $serverHostAddr
+     * @param string $serverUsername
+     * @param string $serverPassword
+     * @return mixed|void
+     * @throws ExceptionHandler
+     */
     public function connect(
         $serverIdentifier = 'default',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
-        $serverUsername = 'username',
-        $serverPassword = 'password'
+        $serverUsername = 'tornelib',
+        $serverPassword = 'tornelib1337'
     ) {
-        // TODO: Implement connect() method.
+        $return = null;
+
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($serverIdentifier);
+
+        if (!isset($this->initDriver[$useIdentifier])) {
+            $this->getInitializedDriver(null, $useIdentifier);
+        }
+
+        // Configure current connection.
+        $this->setServer(
+            $useIdentifier,
+            $serverOptions,
+            $serverHostAddr,
+            $serverUsername,
+            $serverPassword
+        );
+
+        switch ($this->getPreferredDriver($useIdentifier)) {
+            case Drivers::DRIVER_MYSQL_IMPROVED:
+                $return = $this->connect_mysqli($useIdentifier);
+                break;
+            case Drivers::DRIVER_MYSQL_DEPRECATED:
+                $return = $this->connect_mysql($useIdentifier);
+                break;
+            case Drivers::DRIVER_MYSQL_PDO:
+                $return = $this->connect_pdo($useIdentifier);
+                break;
+
+            default:
+                throw new ExceptionHandler(
+                    sprintf(
+                        '%s error in %s: could not find any proper driver to connect with.',
+                        __FUNCTION__,
+                        __CLASS__
+                    )
+                );
+                break;
+        }
+
+        if (Flag::getFlag('SQLCHAIN')) {
+            return $this;
+        }
+
+        return $return;
     }
 
     /**
-     * @param $schemaName
-     * @return $this|mixed
+     * @param $identifier
+     * @param $options
+     * @param $serverAddr
+     * @param $serverUser
+     * @param $serverPassword
+     * @return $this
      */
-    public function setDatabase($schemaName)
+    private function setServer($identifier, $options, $serverAddr, $serverUser, $serverPassword)
     {
-        $this->CONFIG->setDatabase($schemaName);
+        $this->CONFIG->setIdentifier($identifier);
+        $this->CONFIG->setServerOptions($options, $identifier);
+        $this->CONFIG->setServerHost($serverAddr, $identifier);
+        $this->CONFIG->setServerUser($serverUser, $identifier);
+        $this->CONFIG->setServerPassword($serverPassword, $identifier);
 
         return $this;
     }
 
     /**
+     * @param null $identifier
+     * @return int
+     * @noinspection PhpUnused
+     */
+    public function getPreferredDriver($identifier = null)
+    {
+        return $this->CONFIG->getPreferredDriver($identifier);
+    }
+
+    /**
+     *
+     * @param $identifier
+     * @throws ExceptionHandler
+     */
+    private function connect_mysqli($identifier)
+    {
+        // Natural exceptions goes here.
+        $this->CONFIG->setConnection(
+            $return = mysqli_connect(
+                $this->getServerHost($identifier),
+                $this->getServerUser($identifier),
+                $this->getServerPassword($identifier),
+                $this->getDatabase($identifier, false),
+                $this->getServerPort($identifier)
+            ),
+            $identifier
+        );
+
+        $this->setLocalServerOptions($identifier);
+
+        return is_object($return);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getServerHost($identifierName = null)
+    {
+        return $this->CONFIG->getServerHost($identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerUser($identifierName = null)
+    {
+        return $this->CONFIG->getServerUser($identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerPassword($identifierName = null)
+    {
+        return $this->CONFIG->getServerPassword($identifierName);
+    }
+
+    /**
+     * @param $identifierName
+     * @param bool $throwable
      * @return string
      * @throws ExceptionHandler
      */
-    public function getDatabase()
+    public function getDatabase($identifierName = null, $throwable = false)
     {
-        return $this->CONFIG->getDatabase();
+        return $this->CONFIG->getDatabase($identifierName, $throwable);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return int|string
+     */
+    public function getServerPort($identifierName = null)
+    {
+        return $this->CONFIG->getServerPort($identifierName);
+    }
+
+    /**
+     * @param $identifier
+     * @return mixed|void
+     * @throws ExceptionHandler
+     */
+    private function setLocalServerOptions($identifier)
+    {
+        $this->CONFIG->setServerOptions(
+            [
+                defined(MYSQLI_OPT_CONNECT_TIMEOUT) ? MYSQLI_OPT_CONNECT_TIMEOUT : 0 => $this->CONFIG->getTimeout($identifier),
+            ],
+            $identifier
+        );
+
+        if (is_object($this->CONFIG->getConnection($identifier))) {
+            foreach ($this->CONFIG->getServerOptions($identifier) as $optionKey => $optionValue) {
+                mysqli_options(
+                    $this->CONFIG->getConnection($identifier),
+                    $optionKey,
+                    $optionValue
+                );
+            }
+        }
+
+        return true;
+    }
+
+    private function connect_mysql()
+    {
+    }
+
+    private function connect_pdo()
+    {
+    }
+
+    /**
+     * @param int $preferredDriver
+     * @param null $identifier
+     * @return DatabaseConfig
+     */
+    public function setPreferredDriver($preferredDriver = Drivers::DRIVER_MYSQL_IMPROVED, $identifier = null)
+    {
+        return $this->CONFIG->setPreferredDriver($preferredDriver, $identifier);
+    }
+
+    /**
+     * @param $schemaName
+     * @param $identifierName
+     * @return $this|mixed
+     */
+    public function setDatabase($schemaName, $identifierName = null)
+    {
+        $this->CONFIG->setDatabase($schemaName, $identifierName);
+
+        if ($connection = $this->CONFIG->getConnection($identifierName)) {
+            mysqli_select_db($connection, $schemaName);
+        }
+
+        return $this;
     }
 
     /**
@@ -170,15 +349,6 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param null $identifierName
-     * @return int|string
-     */
-    public function getServerPort($identifierName = null)
-    {
-        return $this->CONFIG->getServerPort($identifierName);
-    }
-
-    /**
      * @param string $serverHost
      * @param null $identifierName
      * @return mixed|DatabaseConfig
@@ -188,14 +358,6 @@ class MySQL implements DatabaseInterface
         $identifierName = null
     ) {
         return $this->CONFIG->setServerHost($serverHost, $identifierName);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getServerHost($identifierName = null)
-    {
-        return $this->CONFIG->getServerHost($identifierName);
     }
 
     /**
@@ -209,15 +371,6 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param null $identifierName
-     * @return string
-     */
-    public function getServerUser($identifierName = null)
-    {
-        return $this->CONFIG->getServerUser($identifierName);
-    }
-
-    /**
      * @param $userName
      * @param null $identifierName
      * @return DatabaseConfig
@@ -225,15 +378,6 @@ class MySQL implements DatabaseInterface
     public function setServerPassword($userName, $identifierName = null)
     {
         return $this->CONFIG->setServerPassword($userName, $identifierName);
-    }
-
-    /**
-     * @param null $identifierName
-     * @return string
-     */
-    public function getServerPassword($identifierName = null)
-    {
-        return $this->CONFIG->getServerPassword($identifierName);
     }
 
     /**
