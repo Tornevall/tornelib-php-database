@@ -4,11 +4,13 @@ namespace TorneLIB\Module;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
+use TorneLIB\MODULE_DATABASE;
 
 require_once(__DIR__ . '/../vendor/autoload.php');
 
@@ -166,5 +168,27 @@ class DatabaseTest extends TestCase
     public function getMssqlServerType()
     {
         static::assertEquals(Types::MSSQL, (new MySQL())->setServerType(Types::MSSQL)->getServerType());
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function deprecatedCall()
+    {
+        $unimpl = false;
+        try {
+            (new MODULE_DATABASE())->setServerType(Types::NOT_IMPLEMENTED)->getServerType();
+        } catch (ExceptionHandler $e) {
+            $unimpl = $e->getCode() === Constants::LIB_DATABASE_NOT_IMPLEMENTED ? true : false;
+        }
+
+        $db = new MODULE_DATABASE();
+        $db->setServerType(Types::MYSQL);
+        static::assertTrue(
+            $unimpl &&
+            get_class($db) === MODULE_DATABASE::class &&
+            get_class($db->getHandle()) === MySQL::class
+        );
     }
 }
