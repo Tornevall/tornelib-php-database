@@ -45,7 +45,7 @@ class MySQL implements DatabaseInterface
     }
 
     public function connect(
-        $serverIdentifier = 'localserver',
+        $serverIdentifier = 'default',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
