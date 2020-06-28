@@ -2,10 +2,13 @@
 
 namespace TorneLIB\Module\Database\Drivers;
 
+use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
+use TorneLIB\Utils\Security;
 
 /**
  * Class MySQL
@@ -18,9 +21,69 @@ class MySQL implements DatabaseInterface
      */
     private $CONFIG;
 
+    private $preferredDriver = Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+
+    /**
+     * MySQL constructor.
+     * @throws ExceptionHandler
+     */
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
+
+        $this->getInitializedDriver();
+    }
+
+    /**
+     * @param null $forceDriver
+     * @return int
+     * @throws ExceptionHandler
+     */
+    private function getInitializedDriver($forceDriver = null)
+    {
+        if ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_IMPROVED) &&
+            Security::getCurrentFunctionState('mysqli_connect', false)
+        ) {
+            $this->preferredDriver = Drivers::DRIVER_MYSQL_IMPROVED;
+        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_IMPROVED) &&
+            Security::getCurrentFunctionState('mysql_connect', false)
+        ) {
+            $this->preferredDriver = Drivers::DRIVER_MYSQL_DEPRECATED;
+        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_PDO) &&
+            Security::getCurrentClassState('PDO', false)
+        ) {
+            $this->preferredDriver = Drivers::DRIVER_MYSQL_PDO;
+        } else {
+            throw new ExceptionHandler(
+                sprintf(
+                    'No database drivers is available for %s.',
+                    __CLASS__
+                ),
+                Constants::LIB_DATABASE_DRIVER_UNAVAILABLE
+            );
+        }
+
+        return $this->preferredDriver;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPreferredDriver()
+    {
+        return $this->preferredDriver;
+    }
+
+    /**
+     * @param int $preferDriver
+     * @return $this
+     * @throws ExceptionHandler
+     */
+    public function setPreferredDriver($preferDriver = Drivers::DRIVER_MYSQL_IMPROVED)
+    {
+        $this->getInitializedDriver($preferDriver);
+
+        return $this;
     }
 
     public function getConfig()

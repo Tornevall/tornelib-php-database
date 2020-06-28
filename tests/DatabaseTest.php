@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
+use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
@@ -206,6 +207,53 @@ class DatabaseTest extends TestCase
      * @throws ExceptionHandler
      * @throws JsonMapper_Exception
      */
+    public function getConfigStates()
+    {
+        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
+        $notThere = null;
+        $emptyJson = null;
+        try {
+            (new DatabaseConfig())->getConfig('not-there');
+        } catch (ExceptionHandler $e) {
+            $notThere = $e->getCode();
+        }
+
+        try {
+            (new DatabaseConfig())->getConfig(__DIR__ . '/empty.txt');
+        } catch (ExceptionHandler $e) {
+            $emptyJson = $e->getCode();
+        }
+
+        static::assertTrue(
+            is_array($conf) &&
+            $notThere === 404 &&
+            $emptyJson === Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
+        );
+    }
+
+    /**
+     * @test
+     * @testdox This test requires that all drivers is installed.
+     * @throws ExceptionHandler
+     */
+    public function forceGetDriver()
+    {
+        $sql = new MySQL();
+        $preferred = $sql->getPreferredDriver();
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $newPreferred = $sql->getPreferredDriver();
+
+        static::assertTrue(
+            $preferred === Drivers::DRIVER_MYSQL_IMPROVED &&
+            $newPreferred === Drivers::DRIVER_MYSQL_PDO
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     */
     public function connect()
     {
         $this->initDefault();
@@ -236,33 +284,4 @@ class DatabaseTest extends TestCase
         );
     }
 
-
-    /**
-     * @test
-     * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
-     */
-    public function getConfigStates()
-    {
-        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
-        $notThere = null;
-        $emptyJson = null;
-        try {
-            (new DatabaseConfig())->getConfig('not-there');
-        } catch (ExceptionHandler $e) {
-            $notThere = $e->getCode();
-        }
-
-        try {
-            (new DatabaseConfig())->getConfig(__DIR__ . '/empty.txt');
-        } catch (ExceptionHandler $e) {
-            $emptyJson = $e->getCode();
-        }
-
-        static::assertTrue(
-            is_array($conf) &&
-            $notThere === 404 &&
-            $emptyJson === Constants::LIB_DATABASE_EMPTY_JSON_CONFIG
-        );
-    }
 }
