@@ -9,6 +9,9 @@
         "tornevall/tornelib-php-utils": "6.1.*",
         "netresearch/jsonmapper": "v2.1.0"
     },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
     "authors": [
         {
             "name": "Tomas Tornevall",

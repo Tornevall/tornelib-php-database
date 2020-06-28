@@ -116,7 +116,9 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string $serverHost
+     * @param null $identifierName
+     * @return mixed|DatabaseConfig
      */
     public function setServerHost(
         $serverHost,

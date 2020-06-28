@@ -38,15 +38,12 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function setServerType($databaseType = Types::MYSQL, $identifierName = null)
     {
-        switch ($databaseType) {
-            case Types::MYSQL:
-                $this->database = new MySQL();
-                break;
-            default:
-                /** @var Types $databaseType */
-                $this->isImplemented($databaseType);
-                $this->database = new MySQL();
-                break;
+        if ($databaseType === Types::MYSQL) {
+            $this->database = new MySQL();
+        } else {
+            /** @var Types $databaseType */
+            $this->isImplemented($databaseType);
+            $this->database = new MySQL();
         }
 
         return $this->CONFIG->setDatabase($databaseType);
@@ -85,10 +82,16 @@ class MODULE_DATABASE implements DatabaseInterface
         return $this->database;
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed|null
+     */
     public function __call($name, $arguments)
     {
+        $return = null;
         if (is_null($this->database) && method_exists($this->database, $name)) {
-            return call_user_func_array(
+            $return = call_user_func_array(
                 [
                     $this->database,
                     $name,
@@ -96,6 +99,7 @@ class MODULE_DATABASE implements DatabaseInterface
                 $arguments
             );
         }
+        return $return;
     }
 
     /**
@@ -103,7 +107,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getConfig()
     {
-        // TODO: Implement getConfig() method.
+        return $this->CONFIG;
     }
 
     /**
@@ -112,11 +116,13 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function setConfig($databaseConfig)
     {
-        // TODO: Implement setConfig() method.
+        $this->CONFIG = $databaseConfig;
+
+        return $this;
     }
 
     /**
-     * @return int
+     * @return void
      */
     public function getLastInsertId()
     {
@@ -145,29 +151,30 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * @return string
+     * @throws ExceptionHandler
      */
     public function getDatabase()
     {
-        // TODO: Implement getDatabase() method.
+        return $this->CONFIG->getDatabase();
     }
 
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setDatabase($schemaName)
     {
-        // TODO: Implement setDatabase() method.
+        return $this->CONFIG->setDatabase($schemaName);
     }
 
     /**
      * @param string $identifierName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setIdentifier($identifierName)
     {
-        // TODO: Implement setIdentifier() method.
+        return $this->CONFIG->setIdentifier($identifierName);
     }
 
     /**
@@ -175,36 +182,36 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getIdentifier()
     {
-        // TODO: Implement getIdentifier() method.
+        return $this->CONFIG->getIdentifier();
     }
 
     /**
      * @param int $portNumber
      * @param null $identifierName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setServerPort($portNumber, $identifierName = null)
     {
-        // TODO: Implement setServerPort() method.
+        return $this->CONFIG->setServerPort($portNumber, $identifierName);
     }
 
     /**
      * @param null $identifierName
-     * @return int
+     * @return int|string|null
      */
     public function getServerPort($identifierName = null)
     {
-        // TODO: Implement getServerPort() method.
+        return $this->CONFIG->getServerPort($identifierName);
     }
 
     /**
      * @param string $serverHost
      * @param null $identifierName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setServerHost($serverHost, $identifierName = null)
     {
-        // TODO: Implement setServerHost() method.
+        return $this->CONFIG->setServerHost($serverHost, $identifierName);
     }
 
     /**
@@ -213,17 +220,17 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getServerHost($identifierName = null)
     {
-        // TODO: Implement getServerHost() method.
+        return $this->CONFIG->getServerHost($identifierName);
     }
 
     /**
      * @param $userName
      * @param null $identifierName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setServerUser($userName, $identifierName = null)
     {
-        // TODO: Implement setServerUser() method.
+        return $this->CONFIG->setServerUser($userName, $identifierName);
     }
 
     /**
@@ -232,17 +239,17 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getServerUser($identifierName = null)
     {
-        // TODO: Implement getServerUser() method.
+        return $this->CONFIG->getServerUser($identifierName);
     }
 
     /**
      * @param $password
      * @param null $identifierName
-     * @return $mixed
+     * @return DatabaseConfig
      */
     public function setServerPassword($password, $identifierName = null)
     {
-        // TODO: Implement setServerPassword() method.
+        return $this->CONFIG->setServerPassword($password, $identifierName);
     }
 
     /**
@@ -251,7 +258,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getServerPassword($identifierName = null)
     {
-        // TODO: Implement getServerPassword() method.
+        return $this->CONFIG->getServerPassword($identifierName);
     }
 
     /**
@@ -261,7 +268,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function setServerOptions($serverOptions, $identifierName = null)
     {
-        // TODO: Implement setServerOptions() method.
+        return $this->CONFIG->setServerOptions($serverOptions, $identifierName);
     }
 
     /**
@@ -270,7 +277,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getServerOptions($identifierName = null)
     {
-        // TODO: Implement getServerOptions() method.
+        return $this->CONFIG->getServerOptions($identifierName);
     }
 
     /**

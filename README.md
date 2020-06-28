@@ -5,7 +5,7 @@ Written to autoselect proper driver regardless of system content.
 
 ## Testings
 
-Tests works best with a database installed. Installing it automatically is not offered yet. You could do something like this to prepare data if you need to run tests:
+Test works best with a database installed. Installing it automatically is not offered yet. You could do something like this to prepare data if you need to run tests:
 
     CREATE USER 'tornelib'@'localhost' IDENTIFIED BY 'tornelib1337';
     GRANT ALL PRIVILEGES ON tornelib_tests.* TO tornelib@localhost;

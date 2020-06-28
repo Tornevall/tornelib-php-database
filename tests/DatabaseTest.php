@@ -2,6 +2,8 @@
 
 /** @noinspection PhpComposerExtensionStubsInspection */
 
+/** @noinspection PhpDeprecationInspection */
+
 namespace TorneLIB\Module;
 
 use Exception;
@@ -48,6 +50,7 @@ class DatabaseTest extends TestCase
      */
     public function theVersion()
     {
+        /** @noinspection PhpParamsInspection */
         static::expectException(Exception::class);
 
         Version::getRequiredVersion('9999');
@@ -186,7 +189,7 @@ class DatabaseTest extends TestCase
         try {
             (new MODULE_DATABASE())->setServerType(Types::NOT_IMPLEMENTED)->getServerType();
         } catch (ExceptionHandler $e) {
-            $unimpl = $e->getCode() === Constants::LIB_DATABASE_NOT_IMPLEMENTED ? true : false;
+            $unimpl = $e->getCode() === Constants::LIB_DATABASE_NOT_IMPLEMENTED;
         }
 
         $db = new MODULE_DATABASE();
@@ -200,12 +203,18 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
      */
     public function connect()
     {
         $this->initDefault();
     }
 
+    /**
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     */
     private function initDefault()
     {
         $this->getConfig();
@@ -230,8 +239,8 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
-     * @return mixed
      * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
      */
     public function getConfigStates()
     {
@@ -245,7 +254,7 @@ class DatabaseTest extends TestCase
         }
 
         try {
-            (new DatabaseConfig())->getConfig(__DIR__ . '/empty.json');
+            (new DatabaseConfig())->getConfig(__DIR__ . '/empty.txt');
         } catch (ExceptionHandler $e) {
             $emptyJson = $e->getCode();
         }

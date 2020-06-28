@@ -76,11 +76,6 @@ class DatabaseConfig
     private $serverOptions = [];
 
     /**
-     * @var Servers $serverList
-     */
-    private $serverList;
-
-    /**
      * Get name of chosen database for connection ("use schema").
      *
      * @param string $identifier
@@ -206,7 +201,7 @@ class DatabaseConfig
     }
 
     /**
-     * @param array $serverHost
+     * @param string $serverHost
      * @param null $identifier
      * @return DatabaseConfig
      * @since 6.1.0
@@ -393,11 +388,8 @@ class DatabaseConfig
             $mapFromJson,
             new Configuration()
         );
-
         $this->throwWrongConfigClass($json);
-        $this->serverList = $json->getDatabase();
-
-        return $this->serverList;
+        return $json->getDatabase();
     }
 
     /**

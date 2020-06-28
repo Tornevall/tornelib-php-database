@@ -60,7 +60,7 @@ interface DatabaseInterface
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
-     * @return $mixed
+     * @return mixed
      */
     public function setDatabase($schemaName);
 
@@ -71,7 +71,7 @@ interface DatabaseInterface
 
     /**
      * @param string $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setIdentifier($identifierName);
 
@@ -83,7 +83,7 @@ interface DatabaseInterface
     /**
      * @param int $portNumber
      * @param null $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setServerPort($portNumber, $identifierName = null);
 
@@ -96,7 +96,7 @@ interface DatabaseInterface
     /**
      * @param string $serverHost
      * @param null $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setServerHost($serverHost, $identifierName = null);
 
@@ -109,7 +109,7 @@ interface DatabaseInterface
     /**
      * @param $userName
      * @param null $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setServerUser($userName, $identifierName = null);
 
@@ -122,7 +122,7 @@ interface DatabaseInterface
     /**
      * @param $password
      * @param null $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setServerPassword($password, $identifierName = null);
 
@@ -135,7 +135,7 @@ interface DatabaseInterface
     /**
      * @param int $databaseType
      * @param null $identifierName
-     * @return $mixed
+     * @return mixed
      */
     public function setServerType($databaseType = Types::MYSQL, $identifierName = null);
 
