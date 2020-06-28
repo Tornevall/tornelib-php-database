@@ -49,10 +49,14 @@ class DatabaseTest extends TestCase
      */
     public function setIdentifier()
     {
+        $SQL = (new MySQL());
         static::assertEquals(
             'theIdentifier',
-            (new MySQL())->setIdentifier('theIdentifier')->getIdentifier()
+            $SQL->setIdentifier('theIdentifier')->getIdentifier()
         );
+
+        $identifiers = $SQL->getConfig()->getIdentifiers();
+        static::assertCount(1, $identifiers);
     }
 
     /**
@@ -76,5 +80,13 @@ class DatabaseTest extends TestCase
             $second === 'tests' &&
             $fail
         );
+    }
+
+    /**
+     * @test
+     */
+    public function setServerPort()
+    {
+        static::assertEquals('3300', (new MySQL())->setServerPort('3300')->getServerPort());
     }
 }

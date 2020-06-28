@@ -5,7 +5,6 @@ namespace TorneLIB\Module\Database\Drivers;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
-use TorneLIB\Utils\Security;
 
 /**
  * Class MySQL
@@ -93,15 +92,26 @@ class MySQL implements DatabaseInterface
         return $this->CONFIG->getIdentifier();
     }
 
-
-    public function setServerPort($portNumber)
+    /**
+     * @param int $portNumber
+     * @param null $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setServerPort($portNumber, $identifierName = null)
     {
-        // TODO: Implement setServerPort() method.
+        $this->CONFIG->setServerPort($portNumber, $identifierName);
+
+        return $this;
     }
 
-    public function getServerPort()
+    /**
+     * @param null $identifierName
+     * @return array
+     */
+    public function getServerPort($identifierName = null)
     {
-        // TODO: Implement getServerPort() method.
+        return $this->CONFIG->getServerPort($identifierName);
     }
 
     public function setQuery($queryString, $parameters)

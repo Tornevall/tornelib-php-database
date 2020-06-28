@@ -104,6 +104,10 @@ class DatabaseConfig
      */
     public function setIdentifier($identifier)
     {
+        if (!in_array($identifier, $this->identifiers, true)) {
+            $this->identifiers[] = $identifier;
+        }
+
         $this->identifier = $identifier;
 
         return $this;
