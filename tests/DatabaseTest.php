@@ -6,6 +6,7 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
+use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
 
@@ -149,5 +150,21 @@ class DatabaseTest extends TestCase
     public function getDefaultServerUser()
     {
         static::assertEquals(null, (new MySQL())->getServerUser());
+    }
+
+    /**
+     * @test
+     */
+    public function getDefaultServerType()
+    {
+        static::assertEquals(Types::MYSQL, (new MySQL())->getServerType());
+    }
+
+    /**
+     * @test
+     */
+    public function getMssqlServerType()
+    {
+        static::assertEquals(Types::MSSQL, (new MySQL())->setServerType(Types::MSSQL)->getServerType());
     }
 }

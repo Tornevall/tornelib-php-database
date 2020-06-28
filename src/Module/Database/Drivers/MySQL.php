@@ -3,6 +3,7 @@
 namespace TorneLIB\Module\Database\Drivers;
 
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
 
@@ -168,6 +169,25 @@ class MySQL implements DatabaseInterface
     public function getServerPassword($identifierName = null)
     {
         return $this->CONFIG->getServerPassword($identifierName);
+    }
+
+    /**
+     * @param int $serverType
+     * @param null $identifierName
+     * @return DatabaseConfig
+     */
+    public function setServerType($serverType = Types::MYSQL, $identifierName = null)
+    {
+        return $this->CONFIG->setServerType($serverType, $identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerType($identifierName = null)
+    {
+        return $this->CONFIG->getServerType($identifierName);
     }
 
     public function setQuery($queryString, $parameters)

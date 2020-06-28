@@ -4,6 +4,7 @@ namespace TorneLIB\Module\Config;
 
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Model\Database\Types;
 
 /**
  * Class DatabaseConfig
@@ -50,6 +51,9 @@ class DatabaseConfig
      */
     private $serverUser = [];
     private $serverPassword = [];
+    private $serverType = [
+        'default' => Types::MYSQL,
+    ];
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -233,6 +237,30 @@ class DatabaseConfig
     public function setServerPassword($serverPassword, $identifier = null)
     {
         $this->serverPassword[$this->getCurrentIdentifier($identifier)] = $serverPassword;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifier
+     * @return null|string
+     * @since 6.1.0
+     */
+    public function getServerType($identifier = null)
+    {
+        return isset($this->serverType[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverType[$this->getCurrentIdentifier($identifier)] : null;
+    }
+
+    /**
+     * @param int $serverType
+     * @param null $identifier
+     * @return DatabaseConfig
+     * @since 6.1.0
+     */
+    public function setServerType($serverType = Types::MYSQL, $identifier = null)
+    {
+        $this->serverType[$this->getCurrentIdentifier($identifier)] = $serverType;
 
         return $this;
     }

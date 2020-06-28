@@ -2,6 +2,7 @@
 
 namespace TorneLIB\Model\Interfaces;
 
+use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
 
 /**
@@ -130,6 +131,19 @@ interface DatabaseInterface
      * @return string
      */
     public function getServerPassword($identifierName = null);
+
+    /**
+     * @param int $databaseType
+     * @param $identifierName
+     * @return $this
+     */
+    public function setServerType($databaseType = Types::MYSQL, $identifierName);
+
+    /**
+     * @param null $identifierName
+     * @return Types
+     */
+    public function getServerType($identifierName = null);
 
     /**
      * setQuery (query)
