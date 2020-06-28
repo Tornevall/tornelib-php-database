@@ -257,11 +257,9 @@ class DatabaseTest extends TestCase
     /**
      * @test
      * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
      */
-    public function connectMysqlISuccessAndManual()
+    public function connectDefault()
     {
-        $this->initDefault();
         // Return $this instead of boolean.
         //Flag::setFlag('SQLCHAIN', true);
         $sql = (new MySQL())->connect();
@@ -279,31 +277,6 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             $sql &&
             $switched === 'tornelib_tests'
-        );
-    }
-
-    /**
-     * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
-     */
-    private function initDefault()
-    {
-        $this->getConfig();
-    }
-
-    /**
-     * Configurations.
-     * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
-     */
-    private function getConfig()
-    {
-        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
-        $localhostConfigurationData = $conf->getServer('localhost');
-
-        static::assertTrue(
-            get_class($conf) === Servers::class &&
-            $localhostConfigurationData->getPassword() === 'tornelib1337'
         );
     }
 
@@ -403,6 +376,43 @@ class DatabaseTest extends TestCase
             '127.0.0.1',
             sprintf('fail%s', sha1(uniqid('', true))),
             'tornelib1337'
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function connectDeprecatedModule()
+    {
+        $sql = new MODULE_DATABASE();
+        $sql->setServerType(Types::MYSQL);
+        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        static::assertTrue(
+            $sql->connect(
+                null,
+                null,
+                $this->serverhost,
+                $this->username,
+                $this->password
+            )
+        );
+    }
+
+    /**
+     * Configurations.
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
+    private function getConfig()
+    {
+        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
+        $localhostConfigurationData = $conf->getServer('localhost');
+
+        static::assertTrue(
+            get_class($conf) === Servers::class &&
+            $localhostConfigurationData->getPassword() === 'tornelib1337'
         );
     }
 }

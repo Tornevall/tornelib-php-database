@@ -38,51 +38,11 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
-     * @param int $databaseType
-     * @param null $identifierName
-     * @return DatabaseConfig
-     * @throws ExceptionHandler
-     */
-    public function setServerType($databaseType = Types::MYSQL, $identifierName = null)
-    {
-        if ($databaseType === Types::MYSQL) {
-            $this->database = new MySQL();
-        } else {
-            /** @var Types $databaseType */
-            $this->isImplemented($databaseType);
-            $this->database = new MySQL();
-        }
-
-        return $this->CONFIG->setDatabase($databaseType, $identifierName);
-    }
-
-    /**
-     * @param int $databaseType
-     * @return bool
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function isImplemented($databaseType = Types::MYSQL)
-    {
-        // As long as there is nothing but MySQL we'll throw this exception.
-        if ($databaseType !== Types::MYSQL) {
-            throw new ExceptionHandler(
-                sprintf(
-                    'Database type "%d" not implemented yet.',
-                    $databaseType
-                ),
-                Constants::LIB_DATABASE_NOT_IMPLEMENTED
-            );
-        }
-
-        return true;
-    }
-
-    /**
      * Retrieve the external real module.
      *
      * @return mixed
      * @since 6.1.0
+     * @noinspection PhpUnused
      */
     public function getHandle()
     {
@@ -97,10 +57,26 @@ class MODULE_DATABASE implements DatabaseInterface
     public function __call($name, $arguments)
     {
         $return = null;
-        if (is_null($this->database) && method_exists($this->database, $name)) {
+        if (!is_null($this->database) && method_exists($this->database, $name)) {
             $return = call_user_func_array(
                 [
                     $this->database,
+                    $name,
+                ],
+                $arguments
+            );
+        } elseif (!is_null($this->database) && method_exists($this->database->CONFIG, $name)) {
+            $return = call_user_func_array(
+                [
+                    $this->database->CONFIG,
+                    $name,
+                ],
+                $arguments
+            );
+        } elseif (method_exists($this->CONFIG, $name)) {
+            $return = call_user_func_array(
+                [
+                    $this->CONFIG,
                     $name,
                 ],
                 $arguments
@@ -144,15 +120,25 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param string $serverHostAddr
      * @param string $serverUsername
      * @param string $serverPassword
+     * @param int $serverType
+     * @param null $schemaName
      * @return mixed
+     * @throws ExceptionHandler
      */
     public function connect(
         $serverIdentifier = 'localserver',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
-        $serverPassword = 'password'
+        $serverPassword = 'password',
+        $serverType = Types::MYSQL,
+        $schemaName = null
     ) {
+        if (is_null($this->database)) {
+            $this->setServerType($serverType, $serverIdentifier);
+            $this->CONFIG->setDatabase($schemaName, $serverIdentifier);
+        }
+
         return $this->database->connect(
             $serverIdentifier,
             $serverOptions,
@@ -160,6 +146,44 @@ class MODULE_DATABASE implements DatabaseInterface
             $serverUsername,
             $serverPassword
         );
+    }
+
+    /**
+     * @param int $databaseType
+     * @param null $identifierName
+     * @return DatabaseConfig
+     * @throws ExceptionHandler
+     */
+    public function setServerType($databaseType = Types::MYSQL, $identifierName = null)
+    {
+        $this->isImplemented($databaseType);
+        if ($databaseType === Types::MYSQL) {
+            $this->database = new MySQL();
+        }
+
+        return $this->database->setServerType($databaseType, $identifierName);
+    }
+
+    /**
+     * @param int $databaseType
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function isImplemented($databaseType = Types::MYSQL)
+    {
+        // As long as there is nothing but MySQL we'll throw this exception.
+        if ($databaseType !== Types::MYSQL) {
+            throw new ExceptionHandler(
+                sprintf(
+                    'Database type "%d" not implemented yet.',
+                    $databaseType
+                ),
+                Constants::LIB_DATABASE_NOT_IMPLEMENTED
+            );
+        }
+
+        return true;
     }
 
     /**
