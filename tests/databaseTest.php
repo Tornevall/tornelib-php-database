@@ -44,6 +44,9 @@ class databaseTest extends TestCase
      */
     private $DATABASE_SERVER_ADDRESS = "127.0.0.1";
 
+    /** @var string Server address in ipv6 format. For future tests. */
+    private $DATABASE_SERVER_ADDRESS_IVP6 = "::";
+
     /**
      * @var string $DBName Database with all them tables
      */
@@ -66,7 +69,7 @@ class databaseTest extends TestCase
         try {
             $this->DATABASE_INTERFACE->connect("serverTest", null, null, "nonExistentUserErrcode1045", null);
         } catch (\Exception $e) {
-            $this->assertTrue($e->getCode() == 1045);
+            static::assertEquals($e->getCode(), 1045);
         }
     }
 
@@ -76,7 +79,7 @@ class databaseTest extends TestCase
      */
     public function mysqliConnect()
     {
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(
+        static::assertTrue($connector = $this->DATABASE_INTERFACE->connect(
             null,
             null,
             $this->DATABASE_SERVER_ADDRESS,
@@ -112,7 +115,7 @@ class databaseTest extends TestCase
         }
         $SA->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
         $iResult = $SA->Query_First("SELECT COUNT(*) c FROM tests");
-        $this->assertTrue($iResult['c'] > 0);
+        static::assertTrue($iResult['c'] > 0);
     }
 
     /**
@@ -136,7 +139,7 @@ class databaseTest extends TestCase
         }
         $SA->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
         $iResult = $SA->Query_First("SELECT COUNT(*) c FROM tests", [], true);
-        $this->assertTrue($iResult > 0);
+        static::assertTrue($iResult > 0);
     }
 
     /**
@@ -163,7 +166,7 @@ class databaseTest extends TestCase
         }
         $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
         $iResult = $this->DATABASE_INTERFACE->Query_First("SELECT COUNT(*) c FROM tests");
-        $this->assertTrue($iResult['c'] > 0);
+        static::assertTrue($iResult['c'] > 0);
     }
 
     /**
@@ -175,7 +178,7 @@ class databaseTest extends TestCase
             $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED);
             $this->DATABASE_INTERFACE->connect(null, null, null, "nonExistentUserErrcode1045");
         } catch (\Exception $e) {
-            $this->assertTrue($e->getCode() == TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLD_NOT_EXIST || $e->getCode() == 1045);
+            static::assertTrue($e->getCode() == TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLD_NOT_EXIST || $e->getCode() == 1045);
         }
     }
 
@@ -186,7 +189,7 @@ class databaseTest extends TestCase
     public function mysqlPConnect()
     {
         $this->DATABASE_INTERFACE->setDriverType(TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO);
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(
+        static::assertTrue($this->DATABASE_INTERFACE->connect(
             null,
             null,
             $this->DATABASE_SERVER_ADDRESS,
@@ -204,7 +207,7 @@ class databaseTest extends TestCase
         try {
             $this->DATABASE_INTERFACE->connect(null, null, null, "nonExistentUserErrcode1045", null);
         } catch (\Exception $e) {
-            $this->assertTrue($e->getCode() == 1045);
+            static::assertTrue($e->getCode() == 1045);
         }
     }
 
@@ -221,7 +224,7 @@ class databaseTest extends TestCase
             $this->DATABASE_USER_NAME,
             $this->DATABASE_USER_PASSWORD
         );
-        $this->assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
+        static::assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
     }
 
     /**
@@ -231,7 +234,7 @@ class databaseTest extends TestCase
     public function changeMysqliDatabaseOnConnect()
     {
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
-        $this->assertTrue($this->DATABASE_INTERFACE->connect(
+        static::assertTrue($this->DATABASE_INTERFACE->connect(
             null,
             null,
             $this->DATABASE_SERVER_ADDRESS,
@@ -247,7 +250,7 @@ class databaseTest extends TestCase
     {
         try {
             $this->DATABASE_INTERFACE->setDatabase("fail");
-            $this->assertTrue($this->DATABASE_INTERFACE->connect(
+            static::assertTrue($this->DATABASE_INTERFACE->connect(
                 null,
                 null,
                 $this->DATABASE_SERVER_ADDRESS,
@@ -256,7 +259,7 @@ class databaseTest extends TestCase
             ));
         } catch (\Exception $e) {
             // Using credentials that is not root generates 1044 errors
-            $this->assertTrue($e->getCode() == 1049 || $e->getCode() == 1044);
+            static::assertTrue($e->getCode() == 1049 || $e->getCode() == 1044);
         }
     }
 
@@ -277,7 +280,7 @@ class databaseTest extends TestCase
             $this->DATABASE_INTERFACE->db("fail");
         } catch (\Exception $dbError) {
             // Using credentials that is not root generates 1044 errors
-            $this->assertTrue($dbError->getCode() == 1049 || $dbError->getCode() == 1044);
+            static::assertTrue($dbError->getCode() == 1049 || $dbError->getCode() == 1044);
         }
     }
 
@@ -298,7 +301,7 @@ class databaseTest extends TestCase
         try {
             // Insert to extract
             $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
-            $this->assertTrue($this->DATABASE_INTERFACE->query_prepare("SELECT * FROM tests WHERE 1 = ?", [1]));
+            static::assertTrue($this->DATABASE_INTERFACE->query_prepare("SELECT * FROM tests WHERE 1 = ?", [1]));
         } catch (\Exception $e) {
         }
     }
@@ -319,7 +322,7 @@ class databaseTest extends TestCase
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         try {
             $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
-            $this->assertTrue($this->DATABASE_INTERFACE->query_prepare(
+            static::assertTrue($this->DATABASE_INTERFACE->query_prepare(
                 "SELECT * FROM tests WHERE 1 = ?",
                 [1],
                 ['META']
@@ -358,7 +361,7 @@ class databaseTest extends TestCase
                     }
                 }
             }
-            $this->assertTrue($rows > 0);
+            static::assertTrue($rows > 0);
         } catch (\Exception $e) {
         }
     }
@@ -397,7 +400,7 @@ class databaseTest extends TestCase
                     }
                 }
             }
-            $this->assertTrue($rows > 0);
+            static::assertTrue($rows > 0);
         } catch (\Exception $e) {
         }
     }
@@ -419,7 +422,7 @@ class databaseTest extends TestCase
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         try {
             // Insert.
-            $this->assertTrue($this->DATABASE_INTERFACE->query_prepare(
+            static::assertTrue($this->DATABASE_INTERFACE->query_prepare(
                 "INSERT INTO " . $this->DBName . ".tests (`data`) VALUES (?)",
                 [rand(1, 1024)]
             ));
@@ -445,7 +448,7 @@ class databaseTest extends TestCase
         $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
         $this->DATABASE_INTERFACE->query_prepare("INSERT INTO tests (`data`) VALUES (?)", [rand(1, 1024)]);
         $firstAssoc = $this->DATABASE_INTERFACE->query_first("SELECT * FROM tests WHERE data > ?", [0]);
-        $this->assertTrue(is_array($firstAssoc) && isset($firstAssoc['data']) && $firstAssoc['data'] >= 0);
+        static::assertTrue(is_array($firstAssoc) && isset($firstAssoc['data']) && $firstAssoc['data'] >= 0);
     }
 
     /**
@@ -464,7 +467,7 @@ class databaseTest extends TestCase
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         $this->DATABASE_INTERFACE->query_prepare("TRUNCATE TABLE tests");
         $firstAssoc = $this->DATABASE_INTERFACE->query_first("SELECT * FROM tests WHERE data > ?", [0]);
-        $this->assertTrue(!is_array($firstAssoc));
+        static::assertTrue(!is_array($firstAssoc));
     }
 
     /**
@@ -488,7 +491,7 @@ class databaseTest extends TestCase
         }
         $getQuery = $this->DATABASE_INTERFACE->query_raw("SELECT COUNT(*) c FROM tests");
         $fetchFirst = $this->DATABASE_INTERFACE->fetch($getQuery);
-        $this->assertTrue(isset($fetchFirst['c']) && $fetchFirst['c'] == 5);
+        static::assertTrue(isset($fetchFirst['c']) && $fetchFirst['c'] == 5);
     }
 
     /**
@@ -513,7 +516,7 @@ class databaseTest extends TestCase
         }
         $getQuery = $this->DATABASE_INTERFACE->query_raw("SELECT COUNT(*) c FROM tests");
         $fetchFirst = $this->DATABASE_INTERFACE->fetch($getQuery);
-        $this->assertTrue(isset($fetchFirst['c']) && $fetchFirst['c'] == 5);
+        static::assertTrue(isset($fetchFirst['c']) && $fetchFirst['c'] == 5);
     }
 
     /**
@@ -530,7 +533,7 @@ class databaseTest extends TestCase
             $this->DATABASE_USER_NAME,
             $this->DATABASE_USER_PASSWORD
         );
-        $this->assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
+        static::assertTrue($this->DATABASE_INTERFACE->db($this->DBName));
     }
 
     /**
@@ -549,7 +552,7 @@ class databaseTest extends TestCase
         $this->DATABASE_INTERFACE->setDatabase($this->DBName);
         // Very simple test goes here
         $myString = $this->DATABASE_INTERFACE->escape("'");
-        $this->assertTrue($myString == "\'");
+        static::assertTrue($myString == "\'");
     }
 
     /**
@@ -567,6 +570,6 @@ class databaseTest extends TestCase
             $this->DATABASE_USER_PASSWORD
         );
         $myString = $this->DATABASE_INTERFACE->escape("'");
-        $this->assertTrue($myString == "\'");
+        static::assertTrue($myString == "\'");
     }
 }

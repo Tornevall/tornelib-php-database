@@ -76,7 +76,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param null $serverUsername
          * @param null $serverPassword
          *
-         * @throws \Exception
+         * @throws Exception
          */
         public function __construct(
             $serverIdentifier = '',
@@ -116,7 +116,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     try {
                         // PHP 5.4 issue
                         @mysqli_free_result($this->mysqlPreparedResult);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // Only free results if it is possible
                     }
                 }
@@ -126,7 +126,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                         if (!empty($this->dataResource)) {
                             @mysql_free_result($this->dataResource);
                         }
-                    } catch (\Exception $freeResultException) {
+                    } catch (Exception $freeResultException) {
                         // This one did not want to free anything
                     }
                 }
@@ -136,7 +136,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         /**
          * @param string $configJsonFile
          *
-         * @throws \Exception
+         * @throws Exception
          */
         public function setConfig($configJsonFile = '/etc/tornevall_config.json')
         {
@@ -150,7 +150,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 }
             }
             if ($configJsonFile != "/etc/tornevall_config.json" && !file_exists($configJsonFile)) {
-                throw new \Exception(
+                throw new Exception(
                     "File $configJsonFile is missing",
                     TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_CONFIGURATION_MISSING
                 );
@@ -158,7 +158,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         }
 
         /**
-         * @throws \Exception
+         * @throws Exception
          */
         private function getDataFromConfig()
         {
@@ -195,10 +195,10 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                             $this->setDatabase($dataSource->db);
                         }
                     } else {
-                        throw new \Exception("No user credentials has been set up to use with MySQL driver", 500);
+                        throw new Exception("No user credentials has been set up to use with MySQL driver", 500);
                     }
                 } else {
-                    throw new \Exception("No user credentials has been set up to use with MySQL driver", 500);
+                    throw new Exception("No user credentials has been set up to use with MySQL driver", 500);
                 }
             }
         }
@@ -345,7 +345,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          *
          * @param string $databaseName
          *
-         * @throws \Exception
+         * @throws Exception
          */
         public function setDatabase($databaseName = '')
         {
@@ -403,17 +403,12 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         {
             if (function_exists('mysqli_connect')) {
                 $this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED;
-            } else {
-                if (function_exists('mysql_connect')) {
-                    $this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED;
-                } else {
-                    // Fall back to PDO
-                    if (class_exists('PDO')) {
-                        $pdoDriversStatic = \PDO::getAvailableDrivers();
-                        if (in_array('mysql', $pdoDriversStatic)) {
-                            $this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO;
-                        }
-                    }
+            } elseif (function_exists('mysql_connect')) {
+                $this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED;
+            } elseif (class_exists('PDO')) {
+                $pdoDriversStatic = \PDO::getAvailableDrivers();
+                if (in_array('mysql', $pdoDriversStatic, true)) {
+                    $this->preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO;
                 }
             }
         }
@@ -465,7 +460,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         /**
          * Connect do mysql with mysqli driver
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function CONNECT_MYSQL_IMPROVED()
         {
@@ -480,10 +475,10 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 );
                 $this->setSqlOptions($connectResource);
                 if (mysqli_connect_errno()) {
-                    throw new \Exception(__FUNCTION__ . ": " . mysqli_connect_error(), mysqli_connect_errno());
+                    throw new Exception(__FUNCTION__ . ": " . mysqli_connect_error(), mysqli_connect_errno());
                 } else {
                     if (mysqli_errno($connectResource)) {
-                        throw new \Exception(
+                        throw new Exception(
                             __FUNCTION__ . ": " . mysqli_error($connectResource),
                             mysqli_errno($connectResource)
                         );
@@ -496,7 +491,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     }
                 }
             } else {
-                throw new \Exception(
+                throw new Exception(
                     __FUNCTION__ . ": You are trying to use a database driver that does not exist (mysqli_connect)",
                     TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLI_NOT_EXIST
                 );
@@ -508,7 +503,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         /**
          * Connect to mysql with PDO driver
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function CONNECT_PDO()
         {
@@ -516,7 +511,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             if (class_exists('PDO')) {
                 $pdoDriversStatic = \PDO::getAvailableDrivers();
                 if (!in_array('mysql', $pdoDriversStatic)) {
-                    throw new \Exception(
+                    throw new Exception(
                         "You are trying to use a database driver that does not exist (PDO)",
                         TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLP_NOT_EXIST
                     );
@@ -535,7 +530,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     $this->db();
                     $connectSuccess = true;
                 } else {
-                    throw new \Exception(
+                    throw new Exception(
                         "Could not connect to PDO",
                         TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLP_CONNECT_UNKNOWN_ERROR
                     );
@@ -548,7 +543,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         /**
          * Successful connects returns true
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function CONNECT_MYSQL_DEPRECATED()
         {
@@ -562,17 +557,17 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     true
                 );
                 if (mysql_errno()) {
-                    throw new \Exception(mysql_error($connectResource), mysql_errno($connectResource));
+                    throw new Exception(mysql_error($connectResource), mysql_errno($connectResource));
                 }
                 if (is_object($connectResource) || is_resource($connectResource)) {
                     $this->dataResource = $connectResource;
                     $this->db();
                     $connectSuccess = true;
                 } else {
-                    throw new \Exception("Connection to database failed without any proper reason", 500);
+                    throw new Exception("Connection to database failed without any proper reason", 500);
                 }
             } else {
-                throw new \Exception(
+                throw new Exception(
                     "You are trying to use a database driver that does not exist (mysql_connect)",
                     TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_MYSQLD_NOT_EXIST
                 );
@@ -589,7 +584,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param null $serverPassword
          *
          * @return bool|void
-         * @throws \Exception
+         * @throws Exception
          */
         public function connect(
             $serverIdentifier = '',
@@ -607,16 +602,12 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
 
             if ($driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
                 return $this->CONNECT_MYSQL_IMPROVED();
+            } elseif ($driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                return $this->CONNECT_MYSQL_DEPRECATED();
+            } elseif ($driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                return $this->CONNECT_PDO();
             } else {
-                if ($driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                    return $this->CONNECT_MYSQL_DEPRECATED();
-                } else {
-                    if ($driverInit == TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                        return $this->CONNECT_PDO();
-                    } else {
-                        throw new \Exception("Can not find any suitable database driver for MySQL", 500);
-                    }
-                }
+                throw new Exception("Can not find any suitable database driver for MySQL", 500);
             }
         }
 
@@ -636,7 +627,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param string $databaseName
          *
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         public function db($databaseName = '')
         {
@@ -649,7 +640,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
                 $setDb = mysqli_select_db($this->dataResource, $databaseName);
                 if (mysqli_errno($this->dataResource)) {
-                    throw new \Exception(mysqli_error($this->dataResource), mysqli_errno($this->dataResource));
+                    throw new Exception(mysqli_error($this->dataResource), mysqli_errno($this->dataResource));
                 }
 
                 return $setDb;
@@ -667,7 +658,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
                         $setDb = @mysql_select_db($databaseName, $this->dataResource);
                         if (mysql_errno($this->dataResource)) {
-                            throw new \Exception(mysql_error($this->dataResource), mysql_errno($this->dataResource));
+                            throw new Exception(mysql_error($this->dataResource), mysql_errno($this->dataResource));
                         }
                     }
                 }
@@ -696,14 +687,14 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param array $tests
          *
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function QUERY_MYSQLI_PREPARE($queryString = '', $parameters = [], $tests = [])
         {
             $statementPrepare = mysqli_prepare($this->dataResource, $queryString);
             $resultArray = [];
             if (mysqli_errno($this->dataResource)) {
-                throw new \Exception(mysqli_error($this->dataResource), mysqli_errno($this->dataResource));
+                throw new Exception(mysqli_error($this->dataResource), mysqli_errno($this->dataResource));
             }
             if (!empty($statementPrepare)) {
                 $refArgs = [$statementPrepare, $this->getParameters($parameters)];
@@ -722,9 +713,9 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                         $returnResult = [];
                         // Use get_result if it exists or fail over (this is specifically used in mysqlnd
                         if (method_exists(
-                            $statementPrepare,
-                            "get_result"
-                        ) && (!isset($tests['META']) && !in_array('META', $tests))) {
+                                $statementPrepare,
+                                "get_result"
+                            ) && (!isset($tests['META']) && !in_array('META', $tests))) {
                             $statementPrepareResult = $statementPrepare->get_result();
                             $this->mysqlPreparedResult = $statementPrepareResult;
                             if (is_object($statementPrepare)) {
@@ -781,12 +772,12 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                         }
                     } else {
                         if (isset($statementPrepare->errno) && $statementPrepare->errno > 0) {
-                            throw new \Exception($statementPrepare->error, $statementPrepare->errno);
+                            throw new Exception($statementPrepare->error, $statementPrepare->errno);
                         }
                     }
                 }
             } else {
-                throw new \Exception("Query statement is empty", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_EMPTY_STATEMENT);
+                throw new Exception("Query statement is empty", TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_EMPTY_STATEMENT);
             }
         }
 
@@ -796,11 +787,11 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param string $queryString
          * @param array $parameters
          *
-         * @throws \Exception
+         * @throws Exception
          */
         private function QUERY_MYSQL_PREPARE($queryString = '', $parameters = [])
         {
-            throw new \Exception(
+            throw new Exception(
                 "Prepared statements are not supported in this driver",
                 TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_PREPARE_DEPRECATED
             );
@@ -813,7 +804,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param array $parameters
          *
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function QUERY_PDO_PREPARE($queryString = '', $parameters = [])
         {
@@ -823,7 +814,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             $this->mysqlAffectedRows = null;
             if (intval($this->dataResource->errorCode())) {
                 $errorInfo = implode(", ", $this->dataResource->errorInfo());
-                throw new \Exception($errorInfo, intval($this->dataResource->errorCode()));
+                throw new Exception($errorInfo, intval($this->dataResource->errorCode()));
             }
 
             return $pdoExecResult;
@@ -896,7 +887,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param string $queryString
          *
          * @return bool|\mysqli_result
-         * @throws \Exception
+         * @throws Exception
          */
         private function QUERY_RAW_MYSQLI($queryString = '')
         {
@@ -904,7 +895,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             if (mysqli_errno($this->dataResource)) {
                 $mysqli_error = mysqli_error($this->dataResource);
                 $mysqli_errno = mysqli_errno($this->dataResource);
-                throw new \Exception($mysqli_error, $mysqli_errno);
+                throw new Exception($mysqli_error, $mysqli_errno);
             }
             $this->mysqlPreparedResult = $queryResponse;
             $this->lastInsertId = mysqli_insert_id($this->dataResource);
@@ -938,7 +929,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param string $queryString
          *
          * @return resource
-         * @throws \Exception
+         * @throws Exception
          */
         private function QUERY_RAW_DEPRECATED($queryString = '')
         {
@@ -946,7 +937,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             if (mysql_errno($this->dataResource)) {
                 $mysql_errno = mysql_errno($this->dataResource);
                 $mysql_error = mysql_error($this->dataResource);
-                throw new \Exception($mysql_error, $mysql_errno);
+                throw new Exception($mysql_error, $mysql_errno);
             }
             $this->lastInsertId = mysql_insert_id($this->dataResource);
 
@@ -959,7 +950,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param string $queryString
          *
          * @return bool|\mysqli_result|resource
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_raw($queryString = '')
         {
@@ -976,7 +967,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                     }
                 }
             } else {
-                throw new \Exception(
+                throw new Exception(
                     "Can not parse empty query string",
                     TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_EMPTY_QUERY
                 );
@@ -1041,7 +1032,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
          * @param array $tests
          *
          * @return bool|void
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_prepare($queryString = '', $parameters = [], $tests = [])
         {
@@ -1049,7 +1040,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 $parameters = [];
             }
             if (empty($queryString)) {
-                throw new \Exception(
+                throw new Exception(
                     "Can not parse empty query string",
                     TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_EMPTY_QUERY
                 );
@@ -1064,7 +1055,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                         // This is highly unsupported
                         return $this->QUERY_PDO_PREPARE($queryString, $parameters, $tests);
                     } else {
-                        throw new \Exception(
+                        throw new Exception(
                             "Can not find any valid driver type",
                             TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_UNDEFINED
                         );
