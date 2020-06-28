@@ -35,7 +35,7 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverPort = [
-        'default' => 3306
+        'default' => 3306,
     ];
 
     /**
@@ -43,6 +43,12 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverHost = [];
+
+    /**
+     * @var array $serverUser
+     * @since 6.1.0
+     */
+    private $serverUser = [];
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -136,7 +142,7 @@ class DatabaseConfig
 
     /**
      * @param null $identifier
-     * @return array
+     * @return null|string
      * @since 6.1.0
      */
     public function getServerPort($identifier = null)
@@ -148,6 +154,7 @@ class DatabaseConfig
     /**
      * @param array $serverPort
      * @param null $identifier
+     * @return DatabaseConfig
      * @since 6.1.0
      */
     public function setServerPort($serverPort, $identifier = null)
@@ -159,7 +166,7 @@ class DatabaseConfig
 
     /**
      * @param null $identifier
-     * @return array
+     * @return string
      */
     public function getServerHost($identifier = null)
     {
@@ -175,6 +182,28 @@ class DatabaseConfig
     public function setServerHost($serverHost, $identifier = null)
     {
         $this->serverHost[$this->getCurrentIdentifier($identifier)] = $serverHost;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifier
+     * @return null|string
+     */
+    public function getServerUser($identifier = null)
+    {
+        return isset($this->serverUser[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverUser[$this->getCurrentIdentifier($identifier)] : null;
+    }
+
+    /**
+     * @param array $serverUser
+     * @param null $identifier
+     * @return DatabaseConfig
+     */
+    public function setServerUser($serverUser, $identifier = null)
+    {
+        $this->serverUser[$this->getCurrentIdentifier($identifier)] = $serverUser;
 
         return $this;
     }

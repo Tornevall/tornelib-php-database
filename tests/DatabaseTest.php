@@ -113,4 +113,33 @@ class DatabaseTest extends TestCase
     {
         static::assertEquals('127.0.0.1', (new MySQL())->getServerHost());
     }
+
+    /**
+     * @test
+     */
+    public function setServerUser()
+    {
+        static::assertEquals('root', (new MySQL())->setServerUser('root')->getServerUser());
+    }
+
+    /**
+     * @test
+     */
+    public function setServerUserByIdentifier()
+    {
+        static::assertEquals(
+            'kalle',
+            (new MySQL())->setIdentifier('irregular')
+                ->setServerUser('kalle', 'irregular')
+                ->getServerUser('irregular')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getDefaultServerUser()
+    {
+        static::assertEquals(null, (new MySQL())->getServerUser());
+    }
 }

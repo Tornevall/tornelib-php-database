@@ -106,6 +106,19 @@ interface DatabaseInterface
     public function getServerHost($identifierName = null);
 
     /**
+     * @param $userName
+     * @param null $identifierName
+     * @return $this
+     */
+    public function setServerUser($userName, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerUser($identifierName = null);
+
+    /**
      * setQuery (query)
      * @param string $queryString
      * @param array $parameters

@@ -132,6 +132,24 @@ class MySQL implements DatabaseInterface
         return $this->CONFIG->getServerHost($identifierName);
     }
 
+    /**
+     * @param $userName
+     * @param null $identifierName
+     * @return DatabaseConfig
+     */
+    public function setServerUser($userName, $identifierName = null)
+    {
+        return $this->CONFIG->setServerUser($userName, $identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerUser($identifierName = null)
+    {
+        return $this->CONFIG->getServerUser($identifierName);
+    }
 
     public function setQuery($queryString, $parameters)
     {
