@@ -21,6 +21,8 @@
 
 namespace TorneLIB;
 
+use Exception;
+
 require_once __DIR__ . "/tornevall_database_abstracts.php";
 require_once __DIR__ . "/tornevall_database_interface.php";
 require_once __DIR__ . "/tornevall_database_driver_mysql.php";
@@ -62,15 +64,22 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         private $SERVER_RESOURCE;
         /** @var resource $SERVER_RESOURCE_CONNECTOR */
         private $SERVER_RESOURCE_CONNECTOR;
-        /** @var bool Specifies if the database initializer should recreate resource for each new instance - normally we'd like to keep the old resource so it will be possible to enforce drivers */
+        /**
+         * Specifies if the database initializer should recreate resource for each new
+         * instance - normally we'd like to keep the old resource so it will be possible to enforce drivers.
+         * @var bool
+         */
         private $SERVER_RESOURCE_FORCE_NEW = false;
 
-        /** @var bool If this value is set to true, query_first results will pop the response out of the array if there is only one returned column */
+        /**
+         * If this value is set to true, query_first results will pop the response out of the array
+         * if there is only one returned column.
+         * @var bool
+         */
         private $SINGLE_COLUMN_POPPABLE = false;
 
         /**
          * TorneLIB_Database constructor.
-         *
          * @param string $serverIdentifier
          * @param array $serverOptions
          * @param null $serverHostAddr
@@ -79,7 +88,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @param int $serverType
          * @param string $databaseName
          * @param bool $connect Connect on construct
-         * @throws \Exception
+         * @throws Exception
          */
         public function __construct(
             $serverIdentifier = '',
@@ -121,13 +130,10 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
 
         /**
          * Initialize database
-         *
          * This method normally initializes a database resource once and no more.
-         *
          * @param bool $newDriver
-         *
          * @return bool
-         * @throws \Exception
+         * @throws Exception
          */
         private function initializeDatabaseDriver($newDriver = false)
         {
@@ -160,7 +166,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * If column array in a query_first is alone, the response will be poppable when this option is enabled
+         * If column array in a query_first is alone, the response will be poppable when this option is enabled.
          * @param bool $poppable
          */
         public function setQueryFirstPoppable($poppable = true)
@@ -168,15 +174,16 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
             $this->SINGLE_COLUMN_POPPABLE = $poppable;
         }
 
+        /**
+         * @return bool
+         */
         public function getQueryFirstPoppable()
         {
             return $this->SINGLE_COLUMN_POPPABLE;
         }
 
-
         /**
-         * Identify current server with name
-         *
+         * Identify current server with name.
          * @param string $serverIdentifier
          */
         public function setServerIdentifier($serverIdentifier = '')
@@ -186,16 +193,15 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
 
         /**
          * Get server name (identification)
-         * @return Identifier
+         * @return string
          */
         public function getServerIdentifier()
         {
-            return $this->SERVER_IDENTIFIER;
+            return (string)$this->SERVER_IDENTIFIER;
         }
 
         /**
-         * Set special options for database
-         *
+         * Set special options for database.
          * @param array $serverOptions
          */
         public function setServerOptions($serverOptions = [])
@@ -208,17 +214,16 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get currrent set server options
-         * @return Options
+         * Get currrent set server options.
+         * @return array
          */
         public function getServerOptions()
         {
-            return $this->SERVER_OPTIONS;
+            return (array)$this->SERVER_OPTIONS;
         }
 
         /**
-         * Set up host/addr to database server
-         *
+         * Set up host/addr to database server.
          * @param string $serverHostAddr
          */
         public function setServerHostAddr($serverHostAddr = '')
@@ -229,16 +234,16 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get current set host/addr to database server
-         * @return Hostname
+         * Get current set host/addr to database server.
+         * @return string
          */
         public function getServerHostAddr()
         {
-            return $this->SERVER_HOST_ADDRESS;
+            return (string)$this->SERVER_HOST_ADDRESS;
         }
 
         /**
-         * Set username credentials
+         * Set username credentials.
          *
          * @param string $serverUsername
          */
@@ -250,16 +255,16 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get current username credentials
-         * @return Server
+         * Get current username credentials.
+         * @return string
          */
         public function getServerUserName()
         {
-            return $this->SERVER_USER_NAME;
+            return (string)$this->SERVER_USER_NAME;
         }
 
         /**
-         * Set current password credentials
+         * Set current password credentials.
          *
          * @param string $serverPassword
          */
@@ -271,17 +276,16 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get current password credentials
-         * @return Server
+         * Get current password credentials.
+         * @return string
          */
         public function getServerPassword()
         {
-            return $this->SERVER_USER_PASSWORD;
+            return (string)$this->SERVER_USER_PASSWORD;
         }
 
         /**
-         * Change default connector port
-         *
+         * Change default connector port.
          * @param int $serverPortNumber
          */
         public function setPort($serverPortNumber = 3306)
@@ -292,8 +296,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get the default connector port
-         *
+         * Get the default connector port.
          * @return int
          */
         public function getPort()
@@ -302,8 +305,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Preconfigure database to connect to
-         *
+         * Preconfigure database to connect to.
          * @param string $databaseName
          */
         public function setDatabase($databaseName = '')
@@ -317,8 +319,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get preconfigured database to connect to
-         *
+         * Get preconfigured database to connect to.
          * @return mixed
          */
         public function getDatabase()
@@ -331,6 +332,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
 
         /**
          * @param $ownServerDriver libdriver_database_interface
+         * @noinspection PhpUnused
          */
         public function setServerDriver($ownServerDriver)
         {
@@ -338,8 +340,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Set up which driver that should be used on connection
-         *
+         * Set up which driver that should be used on connection.
          * @param int $serverType
          */
         public function setServerType($serverType = TORNEVALL_DATABASE_TYPES::MYSQL)
@@ -349,6 +350,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
 
         /**
          * @return int|TORNEVALL_DATABASE_TYPES
+         * @noinspection PhpUnused
          */
         public function getServerType()
         {
@@ -362,9 +364,8 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @param null $serverUsername
          * @param null $serverPassword
          * @param bool $forceNew
-         *
          * @return mixed
-         * @throws \Exception
+         * @throws Exception
          */
         public function connect(
             $serverIdentifier = '',
@@ -398,9 +399,10 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Make sure there is a connection before running any queries (requires that someone has set up the connection properly)
+         * Make sure there is a connection before running any queries (requires
+         * that someone has set up the connection properly).
          * @return bool|mixed
-         * @throws \Exception
+         * @throws Exception
          */
         private function checkConnection()
         {
@@ -412,10 +414,10 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Change database when action is supported
+         * Change database when action is supported.
          * @param string $databaseName
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function db($databaseName = '')
         {
@@ -428,9 +430,9 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Prepare strings for injection protection
-         *
+         * Prepare strings for injection protection.
          * @param null $injectionString
+         * @return mixed
          */
         public function escape($injectionString = null)
         {
@@ -442,7 +444,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
          * @param null $resource
          * @param bool $columnArray
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function fetch($resource = null, $columnArray = true)
         {
@@ -455,9 +457,9 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Get last insert id if INSERT/REPLACE has been runned
+         * Get last insert id if INSERT/REPLACE has been runned.
          * @return int|libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function getLastInsertId()
         {
@@ -470,12 +472,11 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Query database (default uses queries based on prepare)
-         *
+         * Query database (default uses queries based on prepare).
          * @param string $queryString
          * @param array $parameters
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function query($queryString = '', $parameters = [])
         {
@@ -488,13 +489,13 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Query method that works like the regular query function call but it also returns the first row found in database
-         *
+         * Query method that works like the regular query function call but it
+         * also returns the first row found in database.
          * @param string $queryString
          * @param array $parameters
          * @param bool $singleValueIsPopped
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_first($queryString = '', $parameters = [], $singleValueIsPopped = false)
         {
@@ -510,13 +511,12 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Prepare a query yourself (default queries almost always runs through this)
-         *
+         * Prepare a query yourself (default queries almost always runs through this).
          * @param string $queryString
          * @param array $parameters
          * @param array $tests
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_prepare($queryString = '', $parameters = [], $tests = [])
         {
@@ -529,12 +529,11 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Just lite query_prepare and query_first: handmade return-first-query-method
-         *
+         * Just lite query_prepare and query_first: handmade return-first-query-method.
          * @param string $queryString
          * @param array $parameters
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_prepare_first($queryString = '', $parameters = [])
         {
@@ -547,10 +546,10 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * A raw query straight into the database where you are completely on your own
+         * A raw query straight into the database where you are completely on your own.
          * @param string $queryString
          * @return libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function query_raw($queryString = '')
         {
@@ -563,11 +562,11 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
-         * Makes all by primary driver unsupported actions from the interface runnable
+         * Makes all by primary driver unsupported actions from the interface runnable.
          * @param $name
          * @param $arguments
          * @return mixed|libdriver_database_interface
-         * @throws \Exception
+         * @throws Exception
          */
         public function __call($name, $arguments)
         {
@@ -583,6 +582,7 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
     }
 }
 
+/** @noinspection ClassConstantCanBeUsedInspection */
 if (!class_exists('TorneLIB_Database') && !class_exists('TorneLIB\TorneLIB_Database')) {
     class TorneLIB_Database extends MODULE_DATABASE
     {
