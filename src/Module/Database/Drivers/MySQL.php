@@ -29,14 +29,9 @@ class MySQL implements DatabaseInterface
     private $CONFIG;
 
     /**
-     * @var $initDriver Indicates if driver is really initialized.
+     * @var array $initDriver Indicates if driver is really initialized.
      */
-    private $initDriver;
-
-    /**
-     * @var bool $pdoSql True if PDO can use MySQL.
-     */
-    private $pdoSql = false;
+    private $initDriver = [];
 
     /**
      * MySQL constructor.
@@ -86,6 +81,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @return bool
+     * @throws ExceptionHandler
      */
     private function getCanPdo()
     {
@@ -363,6 +359,7 @@ class MySQL implements DatabaseInterface
      * @param $identifier
      * @return bool
      * @throws ExceptionHandler
+     * @noinspection PhpUndefinedMethodInspection
      */
     private function connect_mysql($identifier)
     {
@@ -379,6 +376,7 @@ class MySQL implements DatabaseInterface
         );
 
         if (is_resource($connection)) {
+            /** @noinspection PhpParamsInspection */
             $this->CONFIG->setConnection(
                 $connection,
                 $identifier
@@ -427,6 +425,7 @@ class MySQL implements DatabaseInterface
 
         if (is_object($connection)) {
             $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            /** @noinspection PhpParamsInspection */
             $this->CONFIG->setConnection($connection, $identifier);
         } else {
             $this->getPdoError($connection, $PDOException);
@@ -467,7 +466,7 @@ class MySQL implements DatabaseInterface
                 $errorCode = $validIntegerError;
             }
         }
-        if ((int)$errorCode) {
+        if ($errorCode) {
             $this->throwDatabaseException(
                 $errorMessage,
                 $errorCode,

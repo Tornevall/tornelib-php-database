@@ -152,8 +152,7 @@ class MODULE_DATABASE implements DatabaseInterface
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
         $serverPassword = 'password'
-    )
-    {
+    ) {
         return $this->database->connect(
             $serverIdentifier,
             $serverOptions,

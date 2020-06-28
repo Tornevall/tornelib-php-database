@@ -13,6 +13,7 @@ use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Database\Drivers;
+use TorneLIB\Model\Database\Ports;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
@@ -112,7 +113,7 @@ class DatabaseTest extends TestCase
      */
     public function getDefaultServerPort()
     {
-        static::assertEquals(3306, (new MySQL())->getServerPort());
+        static::assertEquals(Ports::MYSQL, (new MySQL())->getServerPort());
     }
 
     /**
@@ -309,10 +310,11 @@ class DatabaseTest extends TestCase
     /**
      * @test
      * @throws ExceptionHandler
+     * @noinspection DynamicInvocationViaScopeResolutionInspection
+     * @noinspection PhpParamsInspection
      */
     public function connectMysqlIFail()
     {
-        /** @noinspection DynamicInvocationViaScopeResolutionInspection */
         static::expectException(ExceptionHandler::class);
         (new MySQL())->connect(
             'manual',
@@ -337,6 +339,8 @@ class DatabaseTest extends TestCase
     /**
      * @test
      * @throws ExceptionHandler
+     * @noinspection DynamicInvocationViaScopeResolutionInspection
+     * @noinspection PhpParamsInspection
      */
     public function connectFailDeprecated()
     {
@@ -384,6 +388,8 @@ class DatabaseTest extends TestCase
     /**
      * @test
      * @throws ExceptionHandler
+     * @noinspection DynamicInvocationViaScopeResolutionInspection
+     * @noinspection PhpParamsInspection
      */
     public function connectPdoFail()
     {

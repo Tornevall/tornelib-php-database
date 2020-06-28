@@ -8,6 +8,7 @@ use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Model\Database\Configuration;
 use TorneLIB\Model\Database\Drivers;
+use TorneLIB\Model\Database\Ports;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 
@@ -41,7 +42,7 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $serverPort = [
-        'default' => 3306,
+        'default' => Ports::MYSQL,
     ];
 
     /**
