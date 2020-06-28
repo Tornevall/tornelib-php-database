@@ -59,7 +59,7 @@ interface DatabaseInterface
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
-     * @return mixed
+     * @return $this
      */
     public function setDatabase($schemaName);
 
@@ -70,7 +70,7 @@ interface DatabaseInterface
 
     /**
      * @param string $identifierName
-     * @return mixed
+     * @return $this
      */
     public function setIdentifier($identifierName);
 
@@ -81,14 +81,29 @@ interface DatabaseInterface
 
     /**
      * @param int $portNumber
-     * @return mixed
+     * @param null $identifierName
+     * @return $this
      */
-    public function setServerPort($portNumber);
+    public function setServerPort($portNumber, $identifierName = null);
 
     /**
+     * @param null $identifierName
      * @return int
      */
-    public function getServerPort();
+    public function getServerPort($identifierName = null);
+
+    /**
+     * @param string $serverHost
+     * @param null $identifierName
+     * @return $this
+     */
+    public function setServerHost($serverHost, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerHost($identifierName = null);
 
     /**
      * setQuery (query)

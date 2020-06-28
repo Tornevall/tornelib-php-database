@@ -19,18 +19,30 @@ class DatabaseConfig
 
     /**
      * @var string $identifier Current identifier. If none, this is always the localhost.
+     * @since 6.1.0
      */
     private $identifier = 'default';
 
     /**
      * @var array $identifiers Collection of added identifiers.
+     * @since 6.1.0
      */
     private $identifiers = [];
 
     /**
+     * Always default to MySQL
      * @var array $serverPort
+     * @since 6.1.0
      */
-    private $serverPort = [];
+    private $serverPort = [
+        'default' => 3306
+    ];
+
+    /**
+     * @var array $serverHost
+     * @since 6.1.0
+     */
+    private $serverHost = [];
 
     /**
      * Get name of chosen database for connection ("use schema").
@@ -129,7 +141,8 @@ class DatabaseConfig
      */
     public function getServerPort($identifier = null)
     {
-        return $this->serverPort[$this->getCurrentIdentifier($identifier)];
+        return isset($this->serverPort[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverPort[$this->getCurrentIdentifier($identifier)] : null;
     }
 
     /**
@@ -140,6 +153,31 @@ class DatabaseConfig
     public function setServerPort($serverPort, $identifier = null)
     {
         $this->serverPort[$this->getCurrentIdentifier($identifier)] = $serverPort;
+
+        return $this;
     }
+
+    /**
+     * @param null $identifier
+     * @return array
+     */
+    public function getServerHost($identifier = null)
+    {
+        return isset($this->serverHost[$this->getCurrentIdentifier($identifier)]) ?
+            $this->serverHost[$this->getCurrentIdentifier($identifier)] : '127.0.0.1';
+    }
+
+    /**
+     * @param array $serverHost
+     * @param null $identifier
+     * @return DatabaseConfig
+     */
+    public function setServerHost($serverHost, $identifier = null)
+    {
+        $this->serverHost[$this->getCurrentIdentifier($identifier)] = $serverHost;
+
+        return $this;
+    }
+
 
 }

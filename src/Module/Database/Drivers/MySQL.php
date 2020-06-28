@@ -114,6 +114,25 @@ class MySQL implements DatabaseInterface
         return $this->CONFIG->getServerPort($identifierName);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function setServerHost(
+        $serverHost,
+        $identifierName = null
+    ) {
+        return $this->CONFIG->setServerHost($serverHost, $identifierName);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getServerHost($identifierName = null)
+    {
+        return $this->CONFIG->getServerHost($identifierName);
+    }
+
+
     public function setQuery($queryString, $parameters)
     {
         // TODO: Implement setQuery() method.

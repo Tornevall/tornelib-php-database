@@ -89,4 +89,28 @@ class DatabaseTest extends TestCase
     {
         static::assertEquals('3300', (new MySQL())->setServerPort('3300')->getServerPort());
     }
+
+    /**
+     * @test
+     */
+    public function getDefaultServerPort()
+    {
+        static::assertEquals(3306, (new MySQL())->getServerPort());
+    }
+
+    /**
+     * @test
+     */
+    public function setServerHost()
+    {
+        static::assertEquals('la-cool-host', (new MySQL())->setServerHost('la-cool-host')->getServerHost());
+    }
+
+    /**
+     * @test
+     */
+    public function getDefaultServerHost()
+    {
+        static::assertEquals('127.0.0.1', (new MySQL())->getServerHost());
+    }
 }
