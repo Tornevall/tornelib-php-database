@@ -304,6 +304,10 @@ class DatabaseTest extends TestCase
      */
     public function connectDeprecatedSuccess()
     {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
         $sql = new MySQL();
         $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED);
         static::assertTrue($sql->connect());
