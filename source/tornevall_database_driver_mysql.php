@@ -16,14 +16,12 @@
  * limitations under the License.
  *
  * @package TorneLIB
- * @version 6.0.6
+ * @version 6.0.7
  *
  */
 
 namespace TorneLIB;
-
 use Exception;
-
 require_once __DIR__ . "/tornevall_database_interface.php";
 
 if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql')) {
@@ -56,7 +54,7 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         /** @var int Last insert id */
         private $lastInsertId;
 
-        /** @var The resource */
+        /** @var resource The resource */
         private $dataResource;
         /** @var int Database driver type */
         private $preferredDriverType = TORNEVALL_DATABASE_DRIVERS::DRIVER_TYPE_NONE;
@@ -107,6 +105,19 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
         }
 
         /**
+         * Quick and dirty fix for live db closing.
+         * @since 6.0.7
+         */
+        public function closeConnection()
+        {
+            if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
+                @mysqli_close($this->dataResource);
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                @mysql_close($this->dataResource);
+            }
+        }
+
+        /**
          * Shut down driver
          */
         public function __destruct()
@@ -120,15 +131,13 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                         // Only free results if it is possible
                     }
                 }
-            } else {
-                if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                    try {
-                        if (!empty($this->dataResource)) {
-                            @mysql_free_result($this->dataResource);
-                        }
-                    } catch (Exception $freeResultException) {
-                        // This one did not want to free anything
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                try {
+                    if (!empty($this->dataResource)) {
+                        @mysql_free_result($this->dataResource);
                     }
+                } catch (Exception $freeResultException) {
+                    // This one did not want to free anything
                 }
             }
         }
@@ -172,10 +181,8 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 if (isset($this->CONFIG)) {
                     if (isset($this->CONFIG->localhost)) {
                         $useDataSource = "localhost";
-                    } else {
-                        if (isset($this->CONFIG->default)) {
-                            $useDataSource = "default";
-                        }
+                    } elseif (isset($this->CONFIG->default)) {
+                        $useDataSource = "default";
                     }
                 }
 
@@ -476,19 +483,15 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 $this->setSqlOptions($connectResource);
                 if (mysqli_connect_errno()) {
                     throw new Exception(__FUNCTION__ . ": " . mysqli_connect_error(), mysqli_connect_errno());
-                } else {
-                    if (mysqli_errno($connectResource)) {
-                        throw new Exception(
-                            __FUNCTION__ . ": " . mysqli_error($connectResource),
-                            mysqli_errno($connectResource)
-                        );
-                    } else {
-                        if (is_object($connectResource)) {
-                            $this->dataResource = $connectResource;
-                            $this->db();
-                            $connectSuccess = true;
-                        }
-                    }
+                } elseif (mysqli_errno($connectResource)) {
+                    throw new Exception(
+                        __FUNCTION__ . ": " . mysqli_error($connectResource),
+                        mysqli_errno($connectResource)
+                    );
+                } elseif (is_object($connectResource)) {
+                    $this->dataResource = $connectResource;
+                    $this->db();
+                    $connectSuccess = true;
                 }
             } else {
                 throw new Exception(
@@ -644,23 +647,19 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                 }
 
                 return $setDb;
-            } else {
-                if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                    // Make sure that we are really able to change database before using the function
-                    if (method_exists($this->dataResource, "select_db")) {
-                        $setDb = $this->dataResource->select_db($databaseName);
-                    } else {
-                        $this->dataResource->query("use " . $databaseName);
-
-                        return true;
-                    }
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                // Make sure that we are really able to change database before using the function
+                if (method_exists($this->dataResource, "select_db")) {
+                    $setDb = $this->dataResource->select_db($databaseName);
                 } else {
-                    if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                        $setDb = @mysql_select_db($databaseName, $this->dataResource);
-                        if (mysql_errno($this->dataResource)) {
-                            throw new Exception(mysql_error($this->dataResource), mysql_errno($this->dataResource));
-                        }
-                    }
+                    $this->dataResource->query("use " . $databaseName);
+
+                    return true;
+                }
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                $setDb = @mysql_select_db($databaseName, $this->dataResource);
+                if (mysql_errno($this->dataResource)) {
+                    throw new Exception(mysql_error($this->dataResource), mysql_errno($this->dataResource));
                 }
             }
 
@@ -770,10 +769,8 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
                                 }
                             }
                         }
-                    } else {
-                        if (isset($statementPrepare->errno) && $statementPrepare->errno > 0) {
-                            throw new Exception($statementPrepare->error, $statementPrepare->errno);
-                        }
+                    } elseif (isset($statementPrepare->errno) && $statementPrepare->errno > 0) {
+                        throw new Exception($statementPrepare->error, $statementPrepare->errno);
                     }
                 }
             } else {
@@ -957,14 +954,10 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             if (!empty($queryString)) {
                 if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
                     return $this->QUERY_RAW_MYSQLI($queryString);
-                } else {
-                    if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                        return $this->QUERY_RAW_DEPRECATED($queryString);
-                    } else {
-                        if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                            return $this->QUERY_RAW_PDO($queryString);
-                        }
-                    }
+                } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                    return $this->QUERY_RAW_DEPRECATED($queryString);
+                } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                    return $this->QUERY_RAW_PDO($queryString);
                 }
             } else {
                 throw new Exception(
@@ -1047,20 +1040,16 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
             }
             if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
                 return $this->QUERY_MYSQLI_PREPARE($queryString, $parameters, $tests);
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                return $this->QUERY_MYSQL_PREPARE($queryString, $parameters, $tests);
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                // This is highly unsupported
+                return $this->QUERY_PDO_PREPARE($queryString, $parameters, $tests);
             } else {
-                if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                    return $this->QUERY_MYSQL_PREPARE($queryString, $parameters, $tests);
-                } else {
-                    if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                        // This is highly unsupported
-                        return $this->QUERY_PDO_PREPARE($queryString, $parameters, $tests);
-                    } else {
-                        throw new Exception(
-                            "Can not find any valid driver type",
-                            TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_UNDEFINED
-                        );
-                    }
-                }
+                throw new Exception(
+                    "Can not find any valid driver type",
+                    TORNEVALL_DATABASE_EXCEPTIONS::DRIVER_TYPE_UNDEFINED
+                );
             }
         }
 
@@ -1080,27 +1069,21 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
 
             if (is_array($this->mysqlPreparedResult)) {
                 return array_shift($this->mysqlPreparedResult);
-            } else {
-                if (is_object($this->mysqlPreparedResult)) {
-                    if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
-                        if (!$this->getAsSqlObject) {
-                            return $this->FETCH_MYSQLI_ASSOC($this->mysqlPreparedResult);
-                        } else {
-                            return $this->FETCH_MYSQLI_OBJECT($this->mysqlPreparedResult);
-                        }
+            } elseif (is_object($this->mysqlPreparedResult)) {
+                if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
+                    if (!$this->getAsSqlObject) {
+                        return $this->FETCH_MYSQLI_ASSOC($this->mysqlPreparedResult);
                     } else {
-                        if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
-                            if (!$this->getAsSqlObject) {
-                                return $this->FETCH_MYSQL_DEPRECATED_ASSOC($this->mysqlPreparedResult);
-                            } else {
-                                return $this->FETCH_MYSQL_DEPRECATED_OBJECT($this->mysqlPreparedResult);
-                            }
-                        } else {
-                            if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                                return $this->FETCH_MYSQL_PDO($this->mysqlPreparedResult);
-                            }
-                        }
+                        return $this->FETCH_MYSQLI_OBJECT($this->mysqlPreparedResult);
                     }
+                } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_DEPRECATED) {
+                    if (!$this->getAsSqlObject) {
+                        return $this->FETCH_MYSQL_DEPRECATED_ASSOC($this->mysqlPreparedResult);
+                    } else {
+                        return $this->FETCH_MYSQL_DEPRECATED_OBJECT($this->mysqlPreparedResult);
+                    }
+                } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                    return $this->FETCH_MYSQL_PDO($this->mysqlPreparedResult);
                 }
             }
         }
@@ -1143,19 +1126,15 @@ if (!class_exists('libdriver_mysql') && !class_exists('TorneLIB\libdriver_mysql'
 
             if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
                 $returnString = @mysqli_real_escape_string($this->dataResource, $this->escape_deprecated($inputString));
-            } else {
-                if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
-                    // The weakest way of stripping something
-                    $quotedString = $this->dataResource->quote($inputString);
-                    $returnString = preg_replace("@^'|'$@is", '', $quotedString);
-                } else {
-                    if ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
-                        $returnString = @mysql_real_escape_string(
-                            $this->dataResource,
-                            $this->escape_deprecated($injectionString)
-                        );
-                    }
-                }
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_PDO) {
+                // The weakest way of stripping something
+                $quotedString = $this->dataResource->quote($inputString);
+                $returnString = preg_replace("@^'|'$@is", '', $quotedString);
+            } elseif ($this->getDriverType() === TORNEVALL_DATABASE_DRIVERS::DRIVER_MYSQL_IMPROVED) {
+                $returnString = @mysql_real_escape_string(
+                    $this->dataResource,
+                    $this->escape_deprecated($injectionString)
+                );
             }
 
             return $returnString;

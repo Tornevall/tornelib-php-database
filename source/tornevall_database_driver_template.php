@@ -42,7 +42,6 @@ class libdriver_database_template implements libdriver_database_interface
 
     /**
      * Identify current server with name
-     *
      * @param string $serverIdentifier
      */
     public function setServerIdentifier($serverIdentifier = '')

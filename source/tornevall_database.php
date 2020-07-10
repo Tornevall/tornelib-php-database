@@ -399,6 +399,14 @@ if (!class_exists('MODULE_DATABASE') && !class_exists('TorneLIB\MODULE_DATABASE'
         }
 
         /**
+         * @since 6.0.7
+         */
+        public function closeConnection()
+        {
+            $this->SERVER_RESOURCE->closeConnection();
+        }
+
+        /**
          * Make sure there is a connection before running any queries (requires
          * that someone has set up the connection properly).
          * @return bool|mixed

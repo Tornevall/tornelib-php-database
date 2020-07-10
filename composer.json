@@ -3,9 +3,7 @@
     "description": "TorneLIB - Generic database driver for MySQL, PDO, etc",
     "minimum-stability": "stable",
     "license": "Apache-2.0",
-    "require": {
-        "php": ">=5.3"
-    },
+    "version": "6.0.7",
     "authors": [
         {
             "name": "Tomas Tornevall",
