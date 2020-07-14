@@ -5,16 +5,19 @@ namespace TorneLIB\Model\Database;
 /**
  * Class Servers
  * @package TorneLIB\Model\Database
+ * @since 6.1.0
  */
 class Servers
 {
     /**
-     * @var ServerData
+     * @var ServerData $servers Serverlist.
+     * @since 6.1.0
      */
     private $servers = [];
 
     /**
      * @return array
+     * @since 6.1.0
      */
     public function getServers()
     {
@@ -24,7 +27,7 @@ class Servers
     /**
      * @param array $serverArray
      * @return Servers
-     * @noinspection PhpUnused
+     * @since 6.1.0
      */
     public function setServers($serverArray = [])
     {
@@ -42,6 +45,7 @@ class Servers
     /**
      * @param null $identifier
      * @return mixed|null
+     * @since 6.1.0
      */
     public function getServer($identifier = null)
     {

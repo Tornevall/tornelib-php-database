@@ -1,20 +1,41 @@
-<?php /** @noinspection PhpUnused */
+<?php
 
 namespace TorneLIB\Model\Database;
 
 /**
  * Class ServerData
  * @package TorneLIB\Model\Database
+ * @since 6.1.0
  */
 class ServerData
 {
+    /**
+     * @var string $user Username.
+     * @since 6.1.0
+     */
     private $user;
+
+    /**
+     * @var string $server Hostname or ip.
+     * @since 6.1.0
+     */
     private $server;
+
+    /**
+     * @var string $password
+     * @since 6.1.0
+     */
     private $password;
+
+    /**
+     * @var string $schema Database/schema name.
+     * @since 6.1.0
+     */
     private $schema;
 
     /**
      * @return mixed
+     * @since 6.1.0
      */
     public function getPassword()
     {
@@ -23,6 +44,7 @@ class ServerData
 
     /**
      * @param mixed $password
+     * @since 6.1.0
      */
     public function setPassword($password)
     {
@@ -31,6 +53,7 @@ class ServerData
 
     /**
      * @return mixed
+     * @since 6.1.0
      */
     public function getSchema()
     {
@@ -39,6 +62,7 @@ class ServerData
 
     /**
      * @param mixed $schema
+     * @since 6.1.0
      */
     public function setSchema($schema)
     {
@@ -47,6 +71,7 @@ class ServerData
 
     /**
      * @return mixed
+     * @since 6.1.0
      */
     public function getServer()
     {
@@ -55,6 +80,7 @@ class ServerData
 
     /**
      * @param mixed $server
+     * @since 6.1.0
      */
     public function setServer($server)
     {
@@ -63,6 +89,7 @@ class ServerData
 
     /**
      * @return mixed
+     * @since 6.1.0
      */
     public function getUser()
     {
@@ -71,6 +98,7 @@ class ServerData
 
     /**
      * @param mixed $user
+     * @since 6.1.0
      */
     public function setUser($user)
     {

@@ -15,6 +15,7 @@ use TorneLIB\Model\Database\Types;
 /**
  * Class DatabaseConfig
  * @package TorneLIB\Module
+ * @since 6.1.0
  */
 class DatabaseConfig
 {
@@ -85,11 +86,13 @@ class DatabaseConfig
 
     /**
      * @var int $defaultTimeout Default connect timeout if any.
+     * @since 6.1.0
      */
     private $defaultTimeout = 10;
 
     /**
      * @var array $timeout Server timeouts.
+     * @since 6.1.0
      */
     private $timeout = [];
 
@@ -128,6 +131,7 @@ class DatabaseConfig
     /**
      * DatabaseConfig constructor.
      * @todo 6.0-compat.
+     * @since 6.1.0
      */
     public function __construct()
     {
@@ -192,7 +196,6 @@ class DatabaseConfig
 
     /**
      * Returns current identifier even if there may be more identifiers added.
-     *
      * @return string
      * @since 6.1.0
      */
@@ -388,7 +391,6 @@ class DatabaseConfig
     }
 
     /**
-     *
      * @param $jsonFile
      * @return mixed
      * @throws ExceptionHandler

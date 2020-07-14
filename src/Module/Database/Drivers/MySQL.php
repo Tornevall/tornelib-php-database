@@ -23,6 +23,7 @@ use TorneLIB\Utils\Security;
 /**
  * Class MySQL
  * @package TorneLIB\Module\Database\Drivers
+ * @since 6.1.0
  */
 class MySQL implements DatabaseInterface
 {
@@ -66,6 +67,7 @@ class MySQL implements DatabaseInterface
      * @param null $identifier
      * @return int
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getInitializedDriver($forceDriver = null, $identifier = null)
     {
@@ -100,6 +102,7 @@ class MySQL implements DatabaseInterface
     /**
      * @return bool
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getCanPdo()
     {
@@ -116,6 +119,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function getConfig()
     {
@@ -147,6 +151,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param DatabaseConfig $databaseConfig
      * @return $this|mixed
+     * @since 6.1.0
      */
     public function setConfig($databaseConfig)
     {
@@ -168,6 +173,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return int
+     * @since 6.1.0
      */
     public function getAffectedRows($identifierName = null)
     {
@@ -182,6 +188,7 @@ class MySQL implements DatabaseInterface
      * @param string $serverPassword
      * @return mixed|void
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function connect(
         $serverIdentifier = 'default',
@@ -245,6 +252,7 @@ class MySQL implements DatabaseInterface
      * @param $serverUser
      * @param $serverPassword
      * @return $this
+     * @since 6.1.0
      */
     private function setServer($identifier, $options, $serverAddr, $serverUser, $serverPassword)
     {
@@ -260,6 +268,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifier
      * @return int
+     * @since 6.1.0
      */
     public function getPreferredDriver($identifier = null)
     {
@@ -270,6 +279,7 @@ class MySQL implements DatabaseInterface
      * @param $identifierName
      * @return bool
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getConnectionImproved($identifierName)
     {
@@ -301,6 +311,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @inheritDoc
+     * @since 6.1.0
      */
     public function getServerHost($identifierName = null)
     {
@@ -310,6 +321,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerUser($identifierName = null)
     {
@@ -319,6 +331,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerPassword($identifierName = null)
     {
@@ -330,6 +343,7 @@ class MySQL implements DatabaseInterface
      * @param bool $throwable
      * @return string
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function getDatabase($identifierName = null, $throwable = false)
     {
@@ -339,6 +353,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return int|string
+     * @since 6.1.0
      */
     public function getServerPort($identifierName = null)
     {
@@ -350,6 +365,7 @@ class MySQL implements DatabaseInterface
      * @param $code
      * @param $fromFunction
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getDatabaseError($message, $code, $fromFunction)
     {
@@ -369,6 +385,7 @@ class MySQL implements DatabaseInterface
      * @param $previousException
      * @param $fromFunction
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function throwDatabaseException($message, $code, $previousException, $fromFunction)
     {
@@ -386,6 +403,7 @@ class MySQL implements DatabaseInterface
      * @param string $identifier
      * @return mixed|void
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function setLocalServerOptions($identifier)
     {
@@ -416,6 +434,7 @@ class MySQL implements DatabaseInterface
      * @return bool
      * @throws ExceptionHandler
      * @noinspection PhpUndefinedMethodInspection
+     * @since 6.1.0
      */
     private function getConnectionDeprecated($identifierName)
     {
@@ -460,6 +479,7 @@ class MySQL implements DatabaseInterface
      * @param $identifierName
      * @return bool
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getConnectionPdo($identifierName)
     {
@@ -495,6 +515,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function getServerOptions($identifierName = null)
     {
@@ -514,6 +535,7 @@ class MySQL implements DatabaseInterface
      * @param $connection
      * @param $PDOException
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function getPdoError($connection, $PDOException)
     {
@@ -548,6 +570,7 @@ class MySQL implements DatabaseInterface
      * @param null $identifier
      * @return int
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function setPreferredDriver($preferredDriver = Drivers::MYSQL_IMPROVED, $identifier = null)
     {
@@ -562,6 +585,7 @@ class MySQL implements DatabaseInterface
      * @return $this|mixed
      * @throws ExceptionHandler
      * @noinspection PhpParamsInspection
+     * @since 6.1.0
      */
     public function setDatabase($schemaName, $identifierName = null)
     {
@@ -602,6 +626,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param string $identifierName
      * @return $this
+     * @since 6.1.0
      */
     public function setIdentifier($identifierName)
     {
@@ -612,6 +637,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @return string
+     * @since 6.1.0
      */
     public function getIdentifier()
     {
@@ -635,6 +661,7 @@ class MySQL implements DatabaseInterface
      * @param string $serverHost
      * @param null $identifierName
      * @return mixed|DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerHost(
         $serverHost,
@@ -647,6 +674,7 @@ class MySQL implements DatabaseInterface
      * @param $userName
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerUser($userName, $identifierName = null)
     {
@@ -667,6 +695,7 @@ class MySQL implements DatabaseInterface
      * @param int $serverType
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerType($serverType = Types::MYSQL, $identifierName = null)
     {
@@ -686,6 +715,7 @@ class MySQL implements DatabaseInterface
      * @param $serverOptions
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerOptions($serverOptions, $identifierName = null)
     {
@@ -852,6 +882,7 @@ class MySQL implements DatabaseInterface
      * @param string $identifierName
      * @return mixed
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function setQuery($queryString, $parameters = [], $identifierName = null)
     {
@@ -898,14 +929,41 @@ class MySQL implements DatabaseInterface
         return $return;
     }
 
+    /**
+     * @param string $queryString
+     * @param array $parameters
+     * @return mixed|void
+     * @since 6.1.0
+     */
     public function getFirst($queryString, $parameters)
     {
         // TODO: Implement getFirst() method.
     }
 
-    public function getRow($resource, $assoc = true)
+    /**
+     * @param $resource
+     * @param null $identifierName
+     * @param bool $assoc
+     * @return mixed|void
+     * @since 6.1.0
+     * @todo Make it happen.
+     */
+    public function getRow($resource, $identifierName = null, $assoc = true)
     {
-        // TODO: Implement getRow() method.
+
+    }
+
+    /**
+     * One database fetcher.
+     * @param $resource
+     * @param bool $assoc
+     * @return mixed|void
+     * @since 6.1.0
+     * @deprecated Use getRow instead().
+     */
+    public function fetch($resource = null, $assoc = true)
+    {
+        return $this->getRow($resource, $this->CONFIG->getCurrentIdentifier(), $assoc);
     }
 
     /**

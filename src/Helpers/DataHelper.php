@@ -1,7 +1,6 @@
 <?php
 
 /** @noinspection PhpComposerExtensionStubsInspection */
-
 /** @noinspection PhpDeprecationInspection */
 
 namespace TorneLIB\Helpers;

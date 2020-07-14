@@ -5,6 +5,7 @@ namespace TorneLIB\Model\Database;
 /**
  * Class Types
  * @package TorneLIB\Model\Database
+ * @since 6.1.0
  */
 class Types
 {
