@@ -673,6 +673,26 @@ class DatabaseTest extends TestCase
     }
 
     /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function ipv6ModConnect()
+    {
+        $configured = new MODULE_DATABASE();
+        $configured->connect(
+            'manual',
+            null,
+            '::',
+            $this->username,
+            $this->password
+        );
+
+        $connection = $configured->getConnection();
+
+        static::assertSame(get_class($connection), MySQL::class);
+    }
+
+    /**
      * Configurations.
      * @throws ExceptionHandler
      * @throws JsonMapper_Exception

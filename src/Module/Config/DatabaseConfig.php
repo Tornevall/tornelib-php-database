@@ -12,6 +12,7 @@ use TorneLIB\Model\Database\Ports;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Network;
+use TorneLIB\Utils\Security;
 
 /**
  * Class DatabaseConfig
@@ -107,7 +108,7 @@ class DatabaseConfig
      * @since 6.1.0
      */
     private $preferredDriver = [
-        'default' => Drivers::DRIVER_OR_METHOD_UNAVAILABLE,
+        'default' => null,
     ];
 
     /**
@@ -142,6 +143,44 @@ class DatabaseConfig
     public function __construct()
     {
         $this->serverOptions = [];
+    }
+
+    /**
+     * @return int
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public static function getDefaultDriver()
+    {
+        $return = Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+
+        if (Security::getCurrentFunctionState('mysqli_connect', false)) {
+            $return = Drivers::MYSQL_IMPROVED;
+        } elseif (Security::getCurrentClassState('PDO', false) && DatabaseConfig::getCanPdo()) {
+            $return = Drivers::MYSQL_PDO;
+        } elseif (Security::getCurrentFunctionState('mysql_connect', false)) {
+            $return = Drivers::MYSQL_DEPRECATED;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public static function getCanPdo()
+    {
+        $return = false;
+        if (Security::getCurrentClassState('PDO', false)) {
+            $pdoDriversStatic = \PDO::getAvailableDrivers();
+            if (in_array('mysql', $pdoDriversStatic, true)) {
+                $return = true;
+            }
+        }
+
+        return $return;
     }
 
     /**
@@ -187,32 +226,6 @@ class DatabaseConfig
     }
 
     /**
-     * @param $result
-     * @param $identifierName
-     * @return $this
-     * @since 6.1.0
-     */
-    public function setResult($result, $identifierName = null)
-    {
-        $this->queryResult[$this->getCurrentIdentifier($identifierName)] = $result;
-
-        return $this;
-    }
-
-    /**
-     * @param null $identifierName
-     * @return mixed|null
-     * @since 6.1.0
-     */
-    public function getResult($identifierName = null)
-    {
-        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
-
-        return isset($this->queryResult[$currentIdentifier]) ?
-            $this->queryResult[$currentIdentifier] : null;
-    }
-
-    /**
      * @param null $identifier
      * @return string
      * @since 6.1.0
@@ -251,6 +264,32 @@ class DatabaseConfig
         $this->identifier = $identifier;
 
         return $this;
+    }
+
+    /**
+     * @param $result
+     * @param $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setResult($result, $identifierName = null)
+    {
+        $this->queryResult[$this->getCurrentIdentifier($identifierName)] = $result;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    public function getResult($identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+
+        return isset($this->queryResult[$currentIdentifier]) ?
+            $this->queryResult[$currentIdentifier] : null;
     }
 
     /**
@@ -662,13 +701,15 @@ class DatabaseConfig
     /**
      * @param null $identifier
      * @return int
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getPreferredDriver($identifier = null)
     {
+        $defaultDriver = self::getDefaultDriver();
         $currentIdentifier = $this->getCurrentIdentifier($identifier);
         return isset($this->preferredDriver[$currentIdentifier]) ?
-            $this->preferredDriver[$currentIdentifier] : Drivers::DRIVER_OR_METHOD_UNAVAILABLE;
+            $this->preferredDriver[$currentIdentifier] : $defaultDriver;
     }
 
     /**

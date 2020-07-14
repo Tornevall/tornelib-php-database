@@ -47,7 +47,6 @@ class MySQL implements DatabaseInterface
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
-        $this->getInitializedDriver();
     }
 
     /**
@@ -71,7 +70,7 @@ class MySQL implements DatabaseInterface
             $this->CONFIG->setPreferredDriver(Drivers::MYSQL_DEPRECATED, $identifier);
         } elseif ((is_null($forceDriver) || $forceDriver === Drivers::MYSQL_PDO) &&
             Security::getCurrentClassState('PDO', false) &&
-            $this->getCanPdo()
+            DatabaseConfig::getCanPdo()
         ) {
             $this->CONFIG->setPreferredDriver(Drivers::MYSQL_PDO, $identifier);
         } else {
@@ -85,24 +84,6 @@ class MySQL implements DatabaseInterface
         }
 
         return $this->CONFIG->getPreferredDriver();
-    }
-
-    /**
-     * @return bool
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function getCanPdo()
-    {
-        $return = false;
-        if (Security::getCurrentClassState('PDO', false)) {
-            $pdoDriversStatic = PDO::getAvailableDrivers();
-            if (in_array('mysql', $pdoDriversStatic, true)) {
-                $return = true;
-            }
-        }
-
-        return $return;
     }
 
     /**
@@ -549,6 +530,7 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifier
      * @return int
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getPreferredDriver($identifier = null)
