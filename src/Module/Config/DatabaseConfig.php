@@ -11,6 +11,7 @@ use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Ports;
 use TorneLIB\Model\Database\Servers;
 use TorneLIB\Model\Database\Types;
+use TorneLIB\Module\Network;
 
 /**
  * Class DatabaseConfig
@@ -306,7 +307,11 @@ class DatabaseConfig
      */
     public function setServerHost($serverHost, $identifier = null)
     {
-        $this->serverHost[$this->getCurrentIdentifier($identifier)] = $serverHost;
+        $useServerHost = $serverHost;
+        if (filter_var($serverHost, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $useServerHost = sprintf('[%s]', $serverHost);
+        }
+        $this->serverHost[$this->getCurrentIdentifier($identifier)] = $useServerHost;
 
         return $this;
     }

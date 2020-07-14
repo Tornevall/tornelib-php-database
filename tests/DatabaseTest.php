@@ -1,6 +1,7 @@
 <?php
 
 /** @noinspection PhpComposerExtensionStubsInspection */
+
 /** @noinspection PhpDeprecationInspection */
 
 namespace TorneLIB\Module;
@@ -649,6 +650,26 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             is_array($first) && is_array($second)
         );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function ipv6Connect()
+    {
+        $configured = new MySQL();
+        $configured->connect(
+            'manual',
+            null,
+            '::',
+            $this->username,
+            $this->password
+        );
+
+        $connection = $configured->getConnection();
+
+        static::assertSame(get_class($connection), MySQL::class);
     }
 
     /**
