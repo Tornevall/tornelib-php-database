@@ -150,6 +150,19 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * @param $inputString
+     * @param $identifierName
+     * @return mixed
+     * @since 6.0.0
+     * @deprecated Escaping through datahelper is deprecated and should be avoided.
+     * @noinspection PhpDeprecationInspection
+     */
+    public function injection($inputString, $identifierName)
+    {
+        return $this->escape($inputString, $identifierName);
+    }
+
+    /**
+     * @param $inputString
      * @param null $identifierName
      * @return mixed
      * @since 6.0.0
@@ -173,19 +186,6 @@ class MODULE_DATABASE implements DatabaseInterface
         }
 
         return $return;
-    }
-
-    /**
-     * @param $inputString
-     * @param $identifierName
-     * @return mixed
-     * @since 6.0.0
-     * @deprecated Escaping through datahelper is deprecated and should be avoided.
-     * @noinspection PhpDeprecationInspection
-     */
-    public function injection($inputString, $identifierName)
-    {
-        return $this->escape($inputString, $identifierName);
     }
 
     /**
@@ -266,25 +266,6 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
-     * Make sure overriders are triggered properly.
-     * @param $serverType
-     * @param $serverIdentifier
-     * @return MODULE_DATABASE
-     */
-    private function setPreferredDriverOverrider($serverType, $serverIdentifier)
-    {
-        if ($serverType === Types::MYSQL) {
-            // Make sure we fetch overriders.
-            $this->database->setPreferredDriver(
-                $this->CONFIG->getPreferredDriver($serverIdentifier),
-                $serverIdentifier
-            );
-        }
-
-        return $this;
-    }
-
-    /**
      * @param int $databaseType
      * @param null $identifierName
      * @return DatabaseConfig
@@ -320,6 +301,25 @@ class MODULE_DATABASE implements DatabaseInterface
         }
 
         return true;
+    }
+
+    /**
+     * Make sure overriders are triggered properly.
+     * @param $serverType
+     * @param $serverIdentifier
+     * @return MODULE_DATABASE
+     */
+    private function setPreferredDriverOverrider($serverType, $serverIdentifier)
+    {
+        if ($serverType === Types::MYSQL) {
+            // Make sure we fetch overriders.
+            $this->database->setPreferredDriver(
+                $this->CONFIG->getPreferredDriver($serverIdentifier),
+                $serverIdentifier
+            );
+        }
+
+        return $this;
     }
 
     /**
