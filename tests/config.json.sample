@@ -5,6 +5,13 @@
                 "user": "tornelib",
                 "server": "localhost",
                 "password": "tornelib1337",
+                "schema": "tornelib_tests",
+                "not_a_value": "ignored"
+            },
+            "ipv6": {
+                "user": "tornelib",
+                "server": "::",
+                "password": "tornelib1337",
                 "schema": "tornelib_tests"
             }
         }

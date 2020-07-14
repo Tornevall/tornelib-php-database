@@ -3,9 +3,9 @@
 The rewritten database driver for the tornelib-series.
 Written to autoselect proper driver regardless of system content. 
 
-## Testings
+## Testing
 
-Tests works best with a database installed. Installing it automatically is not offered yet. You could do something like this to prepare data if you need to run tests:
+Test works best with a database installed. Installing it automatically is not offered yet. You could do something like this to prepare data if you need to run tests:
 
     CREATE USER 'tornelib'@'localhost' IDENTIFIED BY 'tornelib1337';
     GRANT ALL PRIVILEGES ON tornelib_tests.* TO tornelib@localhost;
@@ -21,7 +21,7 @@ Tests works best with a database installed. Installing it automatically is not o
 
 ## To-Do
 
-Exceptions to transfer to the exception handler.
+Exceptions to transfer to the exception handler (eventually), on implementation.
 
 	const DRIVER_TYPE_MYSQLD_NOT_EXIST = 5000;
 	const DRIVER_TYPE_MYSQLI_NOT_EXIST = 5001;

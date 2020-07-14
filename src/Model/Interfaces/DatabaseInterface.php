@@ -1,7 +1,8 @@
 <?php
 
-namespace TorneLIB\Module\Interfaces;
+namespace TorneLIB\Model\Interfaces;
 
+use TorneLIB\Model\Database\Types;
 use TorneLIB\Module\Config\DatabaseConfig;
 
 /**
@@ -26,6 +27,12 @@ interface DatabaseInterface
      * @return DatabaseConfig
      */
     public function getConfig();
+
+    /**
+     * @param DatabaseConfig $databaseConfig
+     * @return mixed
+     */
+    public function setConfig($databaseConfig);
 
     /**
      * @return int
@@ -53,20 +60,106 @@ interface DatabaseInterface
     /**
      * Prepare to enter schema/database. Prior name db()
      * @param $schemaName
+     * @param null $identifierName
      * @return mixed
      */
-    public function setDatabase($schemaName);
+    public function setDatabase($schemaName, $identifierName = null);
+
+    /**
+     * @param $identifierName
+     * @param bool $throwable
+     * @return string
+     */
+    public function getDatabase($identifierName, $throwable = false);
+
+    /**
+     * @param string $identifierName
+     * @return mixed
+     */
+    public function setIdentifier($identifierName);
+
+    /**
+     * @return string
+     */
+    public function getIdentifier();
 
     /**
      * @param int $portNumber
+     * @param null $identifierName
      * @return mixed
      */
-    public function setServerPort($portNumber);
+    public function setServerPort($portNumber, $identifierName = null);
 
     /**
+     * @param null $identifierName
      * @return int
      */
-    public function getServerPort();
+    public function getServerPort($identifierName = null);
+
+    /**
+     * @param string $serverHost
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerHost($serverHost, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerHost($identifierName = null);
+
+    /**
+     * @param $userName
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerUser($userName, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerUser($identifierName = null);
+
+    /**
+     * @param $password
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerPassword($password, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return string
+     */
+    public function getServerPassword($identifierName = null);
+
+    /**
+     * @param int $databaseType
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerType($databaseType = Types::MYSQL, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return Types
+     */
+    public function getServerType($identifierName = null);
+
+    /**
+     * @param $serverOptions
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function setServerOptions($serverOptions, $identifierName = null);
+
+    /**
+     * @param null $identifierName
+     * @return mixed
+     */
+    public function getServerOptions($identifierName = null);
 
     /**
      * setQuery (query)
