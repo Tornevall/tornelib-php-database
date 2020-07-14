@@ -1,7 +1,6 @@
 <?php
 
 /** @noinspection PhpComposerExtensionStubsInspection */
-
 /** @noinspection PhpDeprecationInspection */
 
 namespace TorneLIB\Module;
@@ -190,7 +189,7 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
-    public function deprecatedCall()
+    public function getCallFromDeprecatedModule()
     {
         $unimpl = false;
         try {
@@ -330,6 +329,11 @@ class DatabaseTest extends TestCase
      */
     public function connectFailDeprecated()
     {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+
         static::expectException(ExceptionHandler::class);
 
         $sql = new MySQL();
@@ -396,7 +400,7 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
-    public function connectDeprecatedModule()
+    public function connectPdoDeprecatedModule()
     {
         $sql = new MODULE_DATABASE();
         $sql->setServerType(Types::MYSQL);
