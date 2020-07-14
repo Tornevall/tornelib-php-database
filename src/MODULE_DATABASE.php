@@ -49,6 +49,17 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
+     * @param null $resource
+     * @param bool $assoc
+     * @since 6.1.0
+     * @deprecated Use getRow instead().
+     */
+    public function fetch($resource = null, $assoc = true)
+    {
+        $this->database->fetch($resource, $assoc);
+    }
+
+    /**
      * @since 6.1.0
      */
     public function __destruct()
@@ -529,12 +540,15 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * getRow (prior: fetch first row)
-     * @param $resource
+     * @param null $resource
+     * @param null $identifierName
      * @param bool $assoc
-     * @return mixed
+     * @return mixed|void
+     * @since 6.1.0
      */
-    public function getRow($resource, $assoc = true)
+    public function getRow($resource = null, $identifierName = null, $assoc = true)
     {
-        return $this->database->getRow($resource, $assoc);
+        return $this->database->getRow($resource, $identifierName, $assoc);
     }
+
 }

@@ -204,9 +204,10 @@ interface DatabaseInterface
     /**
      * getRow (prior: fetch first row)
      * @param $resource
+     * @param null $identifierName
      * @param bool $assoc
      * @return mixed
      * @since 6.1.0
      */
-    public function getRow($resource, $assoc = true);
+    public function getRow($resource = null, $identifierName = null, $assoc = true);
 }

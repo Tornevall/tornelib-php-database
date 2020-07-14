@@ -944,13 +944,14 @@ class MySQL implements DatabaseInterface
 
     /**
      * @param $resource
-     * @return $this
+     * @param null $identifierName
+     * @return bool|DatabaseConfig
      */
-    private function getProperResource($resource)
+    private function getProperResource($resource, $identifierName = null)
     {
         $return = false;
 
-        if (!is_null($resource) && get_class($resource) == 'mysqli') {
+        if (!is_null($resource) && get_class($resource) === 'mysqli') {
             $return = $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifierName);
         }
 
@@ -1019,6 +1020,7 @@ class MySQL implements DatabaseInterface
      * @param $queryString
      * @param array $parameters
      * @param null $identifierName
+     * @return bool|mixed|resource
      * @throws ExceptionHandler
      * @deprecate Use setQuery.
      * @since 6.1.0
@@ -1033,7 +1035,6 @@ class MySQL implements DatabaseInterface
      * @param $resource
      * @param bool $assoc
      * @return mixed|void
-     * @throws ExceptionHandler
      * @deprecated Use getRow instead().
      * @since 6.1.0
      */

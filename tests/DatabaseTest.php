@@ -634,6 +634,28 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
+    public function getRowModDeprecated()
+    {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+
+        $this->insertRows();
+        $connection = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_DEPRECATED);
+        $connection->query('SELECT * FROM tests');
+        $first = $connection->getRow();
+        $second = $connection->getRow();
+
+        static::assertTrue(
+            is_array($first) && is_array($second)
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
     public function getRowPdo()
     {
         $this->insertRows();
