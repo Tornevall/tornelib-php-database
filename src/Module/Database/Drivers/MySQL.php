@@ -40,8 +40,12 @@ class MySQL implements DatabaseInterface
     private $initDriver = [];
 
     /**
+     * @var DataResponseRow $responseRow
+     */
+    private $responseRow;
+
+    /**
      * MySQL constructor.
-     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function __construct()
@@ -735,6 +739,24 @@ class MySQL implements DatabaseInterface
     }
 
     /**
+     * @param null $querystring
+     * @param array $parameters
+     * @return DataResponseRow
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public function getResponseRow($querystring = null, $parameters = [])
+    {
+        if (!empty($this->responseRow) && empty($querystring)) {
+            $return = $this->responseRow;
+        } else {
+            $this->getFirst($querystring, $parameters);
+            $return = $this->responseRow;
+        }
+        return $return;
+    }
+
+    /**
      * @param $querystring
      * @param $parameters
      * @return array|mixed|void|null
@@ -1117,7 +1139,12 @@ class MySQL implements DatabaseInterface
                 break;
         }
 
-        return $return;
+        if ($assoc === 3) {
+            $this->responseRow = new DataResponseRow();
+            $this->responseRow->setResponse($return);
+        }
+
+        return $assoc !== 3 ? $return : $this->responseRow;
     }
 
     /**
