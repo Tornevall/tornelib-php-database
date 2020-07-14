@@ -2,12 +2,22 @@
 
 namespace TorneLIB;
 
+use Exception;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Helpers\DataHelper;
+use TorneLIB\Helpers\Version;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
+
+try {
+    Version::getRequiredVersion();
+} catch (Exception $e) {
+    echo $e->getMessage();
+    die;
+}
 
 /**
  * Class MODULE_DATABASE
@@ -17,15 +27,37 @@ use TorneLIB\Module\Database\Drivers\MySQL;
  */
 class MODULE_DATABASE implements DatabaseInterface
 {
+    /**
+     * @var mixed
+     * @since 6.1.0
+     */
+
     private $database;
+    /**
+     * @var DatabaseConfig
+     * @since 6.1.0
+     */
     private $CONFIG;
 
     /**
      * MODULE_DATABASE constructor.
+     * @since 6.1.0
      */
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
+    }
+
+    /**
+     * @since 6.1.0
+     */
+    public function __destruct()
+    {
+        $identifiers = $this->CONFIG->getIdentifiers();
+
+        foreach ($identifiers as $identifierName) {
+            DataHelper::closeConnection($this->CONFIG, $identifierName);
+        }
     }
 
     /**
@@ -38,13 +70,22 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
-     * Retrieve the external real module.
-     *
+     * Retrieve the real module.
      * @return mixed
      * @since 6.1.0
-     * @noinspection PhpUnused
+     * @deprecated Use getConnection.
      */
     public function getHandle()
+    {
+        return $this->getConnection();
+    }
+
+    /**
+     * Retrieve the real module.
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getConnection()
     {
         return $this->database;
     }
@@ -108,11 +149,71 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
-     * @return void
+     * @param $inputString
+     * @param null $identifierName
+     * @return mixed
+     * @since 6.0.0
+     * @deprecated Escaping through datahelper is deprecated and should be avoided.
+     * @noinspection PhpDeprecationInspection
      */
-    public function getLastInsertId()
+    public function escape($inputString, $identifierName = null)
     {
-        // TODO: Implement getLastInsertId() method.
+        if (method_exists($this->database, 'escape')) {
+            $return = $this->database->escape($inputString, $identifierName);
+        } else {
+            try {
+                $return = DataHelper::getEscaped(
+                    $inputString,
+                    $this->CONFIG->getPreferredDriver($identifierName),
+                    $this->CONFIG->getConnection($identifierName)
+                );
+            } catch (Exception $e) {
+                $return = (new DataHelper())->getEscapeDeprecated($inputString);
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $inputString
+     * @param $identifierName
+     * @return mixed
+     * @since 6.0.0
+     * @deprecated Escaping through datahelper is deprecated and should be avoided.
+     * @noinspection PhpDeprecationInspection
+     */
+    public function injection($inputString, $identifierName)
+    {
+        return $this->escape($inputString, $identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return int
+     * @since 6.1.0
+     */
+    public function getLastInsertId($identifierName = null)
+    {
+        $return = 0;
+        if (method_exists($this->database, 'getLastInsertId')) {
+            $return = $this->database->getLastInsertId($identifierName);
+        }
+        return $return;
+    }
+
+    /**
+     * @param null $identifier
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getAffectedRows($identifier = null)
+    {
+        $return = 0;
+        if (method_exists($this->database, 'getAffectedRows')) {
+            $return = $this->database->getAffectedRows($identifier);
+        }
+        return $return;
     }
 
     /**
@@ -129,7 +230,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @throws ExceptionHandler
      */
     public function connect(
-        $serverIdentifier = 'localserver',
+        $serverIdentifier = 'default',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
@@ -137,10 +238,23 @@ class MODULE_DATABASE implements DatabaseInterface
         $serverType = Types::MYSQL,
         $schemaName = null
     ) {
+        // Fix developers mistakes.
+        if (empty($serverIdentifier)) {
+            $serverIdentifier = 'default';
+        }
+        if (!is_array($serverOptions)) {
+            if (!empty($serverOptions)) {
+                $serverOptions = (array)$serverOptions;
+            } else {
+                $serverOptions = [];
+            }
+        }
         if (is_null($this->database)) {
             $this->setServerType($serverType, $serverIdentifier);
             $this->CONFIG->setDatabase($schemaName, $serverIdentifier);
         }
+
+        $this->setPreferredDriverOverrider($serverType, $serverIdentifier);
 
         return $this->database->connect(
             $serverIdentifier,
@@ -149,6 +263,25 @@ class MODULE_DATABASE implements DatabaseInterface
             $serverUsername,
             $serverPassword
         );
+    }
+
+    /**
+     * Make sure overriders are triggered properly.
+     * @param $serverType
+     * @param $serverIdentifier
+     * @return MODULE_DATABASE
+     */
+    private function setPreferredDriverOverrider($serverType, $serverIdentifier)
+    {
+        if ($serverType === Types::MYSQL) {
+            // Make sure we fetch overriders.
+            $this->database->setPreferredDriver(
+                $this->CONFIG->getPreferredDriver($serverIdentifier),
+                $serverIdentifier
+            );
+        }
+
+        return $this;
     }
 
     /**
@@ -307,12 +440,24 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * Mostly for mysql where more drivers (mysqli, pdo, etc) than one is available.
      * @param $preferredDriver
-     * @param null $identifier
+     * @param null $identifierName
      * @return mixed
      */
-    public function setPreferredDriver($preferredDriver, $identifier = null)
+    public function setPreferredDriver($preferredDriver, $identifierName = null)
     {
-        return $this->database->setPreferredDriver($preferredDriver, $identifier);
+        $this->CONFIG->setPreferredDriver($preferredDriver, $identifierName);
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getPreferredDriver($identifierName = null)
+    {
+        return $this->CONFIG->getPreferredDriver($identifierName);
     }
 
     /**
@@ -340,9 +485,9 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param array $parameters
      * @return mixed
      */
-    public function setQuery($queryString, $parameters)
+    public function setQuery($queryString, $parameters = [])
     {
-        // TODO: Implement setQuery() method.
+        return $this->database->setQuery($queryString, $parameters);
     }
 
     /**
@@ -354,7 +499,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getFirst($queryString, $parameters)
     {
-        // TODO: Implement getFirst() method.
+        return $this->database->getFirst($queryString, $parameters);
     }
 
     /**
@@ -365,6 +510,6 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function getRow($resource, $assoc = true)
     {
-        // TODO: Implement getRow() method.
+        return $this->database->getRow($resource, $assoc);
     }
 }

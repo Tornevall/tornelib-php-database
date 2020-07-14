@@ -37,6 +37,7 @@ class DatabaseTest extends TestCase
     private $serverhost = '127.0.0.1';
     private $username = 'tornelib';
     private $password = 'tornelib1337';
+    private $database = 'tornelib_tests';
 
     /**
      * @test
@@ -245,20 +246,22 @@ class DatabaseTest extends TestCase
     {
         $sql = new MySQL();
         $preferred = $sql->getPreferredDriver();
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $sql->setPreferredDriver(Drivers::MYSQL_PDO);
         $newPreferred = $sql->getPreferredDriver();
 
         static::assertTrue(
-            $preferred === Drivers::DRIVER_MYSQL_IMPROVED &&
-            $newPreferred === Drivers::DRIVER_MYSQL_PDO
+            $preferred === Drivers::MYSQL_IMPROVED &&
+            $newPreferred === Drivers::MYSQL_PDO
         );
     }
 
     /**
      * @test
+     * @param bool $helper
+     * @return MySQL
      * @throws ExceptionHandler
      */
-    public function connectDefault()
+    public function connectDefault($helper = false)
     {
         // Return $this instead of boolean.
         //Flag::setFlag('SQLCHAIN', true);
@@ -274,10 +277,16 @@ class DatabaseTest extends TestCase
         $configured->setDatabase('tornelib_tests');
         $switched = $configured->getDatabase();
 
+        if ($helper) {
+            return $configured;
+        }
+
         static::assertTrue(
             $sql &&
             $switched === 'tornelib_tests'
         );
+
+        return $configured;
     }
 
     /**
@@ -309,7 +318,7 @@ class DatabaseTest extends TestCase
             return;
         }
         $sql = new MySQL();
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED);
+        $sql->setPreferredDriver(Drivers::MYSQL_DEPRECATED);
         static::assertTrue($sql->connect());
     }
 
@@ -324,7 +333,7 @@ class DatabaseTest extends TestCase
         static::expectException(ExceptionHandler::class);
 
         $sql = new MySQL();
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED);
+        $sql->setPreferredDriver(Drivers::MYSQL_DEPRECATED);
         $sql->connect(
             null,
             null,
@@ -358,7 +367,7 @@ class DatabaseTest extends TestCase
     public function connectPdo()
     {
         $sql = new MySQL();
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $sql->setPreferredDriver(Drivers::MYSQL_PDO);
         static::assertTrue($sql->connect());
     }
 
@@ -373,7 +382,7 @@ class DatabaseTest extends TestCase
         static::expectException(ExceptionHandler::class);
 
         $sql = new MySQL();
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $sql->setPreferredDriver(Drivers::MYSQL_PDO);
         $sql->connect(
             null,
             null,
@@ -391,7 +400,7 @@ class DatabaseTest extends TestCase
     {
         $sql = new MODULE_DATABASE();
         $sql->setServerType(Types::MYSQL);
-        $sql->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO);
+        $sql->setPreferredDriver(Drivers::MYSQL_PDO);
         static::assertTrue(
             $sql->connect(
                 null,
@@ -417,6 +426,131 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             get_class($conf) === Servers::class &&
             $localhostConfigurationData->getPassword() === 'tornelib1337'
+        );
+    }
+
+    /**
+     * Generic connector.
+     * @param MODULE_DATABASE|MySQL $module
+     * @param int $preferredDriver
+     * @return mixed
+     * @throws ExceptionHandler
+     */
+    private function getConnection($module, $preferredDriver = Drivers::MYSQL_IMPROVED)
+    {
+        $module->setPreferredDriver($preferredDriver);
+        $module->connect(
+            'default',
+            [],
+            $this->serverhost,
+            $this->username,
+            $this->password
+        );
+        return $module->getConnection();
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getModImprovedQuery()
+    {
+        /** @var MODULE_DATABASE $module */
+        if ($module = $this->getConnection(new MODULE_DATABASE())) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult);
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getModDepQuery()
+    {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+        /** @var MODULE_DATABASE $module */
+        if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_DEPRECATED)) {
+            $module->setPreferredDriver(Drivers::MYSQL_DEPRECATED);
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests WHERE data LIKE ?',
+                "%"
+            );
+
+            static::assertTrue($queryResult);
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getDirectImprovedQuery()
+    {
+        /** @var MySQL $module */
+        if ($module = $this->getConnection(new MySQL())) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult);
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getModPdoQuery()
+    {
+        /** @var MODULE_DATABASE $module */
+        if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_PDO)) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult && $module->getAffectedRows());
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getDirectPdoQuery()
+    {
+        /** @var MySQL $module */
+        if ($module = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO)) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult);
+        }
+    }
+
+    /**
+     * @test For those who badly need the old style escaping.
+     */
+    public function getInjection()
+    {
+        $escapeFirst = (new MODULE_DATABASE())->escape("'");
+        $escapeSecond = (new MySQL())->escape("'");
+
+        static::assertTrue(
+            $escapeFirst === "\'" &&
+            $escapeSecond === "\'"
         );
     }
 }

@@ -8,6 +8,7 @@ use TorneLIB\Module\Config\DatabaseConfig;
 /**
  * Interface DatabaseInterface
  * @package TorneLIB\Module\Interfaces
+ * @since 6.1.0
  */
 interface DatabaseInterface
 {
@@ -20,37 +21,42 @@ interface DatabaseInterface
      * serverHostAddr = (string)
      * serverUsername = (string)
      * serverPassword = (string)
+     * @since 6.1.0
      */
     public function __construct();
 
     /**
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function getConfig();
 
     /**
      * @param DatabaseConfig $databaseConfig
      * @return mixed
+     * @since 6.1.0
      */
     public function setConfig($databaseConfig);
 
     /**
+     * @param null $identifierName
      * @return int
+     * @since 6.1.0
      */
-    public function getLastInsertId();
+    public function getLastInsertId($identifierName = null);
 
     /**
      * Connector. If no parameters are set, client will try defaults.
-     *
      * @param string $serverIdentifier
      * @param array $serverOptions
      * @param string $serverHostAddr
      * @param string $serverUsername
      * @param string $serverPassword
      * @return mixed
+     * @since 6.1.0
      */
     public function connect(
-        $serverIdentifier = 'localserver',
+        $serverIdentifier = 'default',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',
@@ -62,6 +68,7 @@ interface DatabaseInterface
      * @param $schemaName
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setDatabase($schemaName, $identifierName = null);
 
@@ -69,17 +76,20 @@ interface DatabaseInterface
      * @param $identifierName
      * @param bool $throwable
      * @return string
+     * @since 6.1.0
      */
     public function getDatabase($identifierName, $throwable = false);
 
     /**
      * @param string $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setIdentifier($identifierName);
 
     /**
      * @return string
+     * @since 6.1.0
      */
     public function getIdentifier();
 
@@ -87,12 +97,14 @@ interface DatabaseInterface
      * @param int $portNumber
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerPort($portNumber, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return int
+     * @since 6.1.0
      */
     public function getServerPort($identifierName = null);
 
@@ -100,12 +112,14 @@ interface DatabaseInterface
      * @param string $serverHost
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerHost($serverHost, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerHost($identifierName = null);
 
@@ -113,12 +127,14 @@ interface DatabaseInterface
      * @param $userName
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerUser($userName, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerUser($identifierName = null);
 
@@ -126,12 +142,14 @@ interface DatabaseInterface
      * @param $password
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerPassword($password, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerPassword($identifierName = null);
 
@@ -139,12 +157,14 @@ interface DatabaseInterface
      * @param int $databaseType
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerType($databaseType = Types::MYSQL, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return Types
+     * @since 6.1.0
      */
     public function getServerType($identifierName = null);
 
@@ -152,29 +172,32 @@ interface DatabaseInterface
      * @param $serverOptions
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerOptions($serverOptions, $identifierName = null);
 
     /**
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function getServerOptions($identifierName = null);
 
     /**
-     * setQuery (query)
+     * setQuery (query).
      * @param string $queryString
      * @param array $parameters
      * @return mixed
+     * @since 6.1.0
      */
     public function setQuery($queryString, $parameters);
 
     /**
-     * getFirst (prior: query_first)
-     *
+     * getFirst (prior: query_first).
      * @param string $queryString
      * @param array $parameters
      * @return mixed
+     * @since 6.1.0
      */
     public function getFirst($queryString, $parameters);
 
@@ -183,6 +206,7 @@ interface DatabaseInterface
      * @param $resource
      * @param bool $assoc
      * @return mixed
+     * @since 6.1.0
      */
     public function getRow($resource, $assoc = true);
 }
