@@ -1,6 +1,7 @@
 <?php
 
 /** @noinspection PhpComposerExtensionStubsInspection */
+
 /** @noinspection PhpDeprecationInspection */
 
 namespace TorneLIB\Module;
@@ -662,18 +663,29 @@ class DatabaseTest extends TestCase
      */
     public function ipv6Connect()
     {
-        $configured = new MySQL();
-        $configured->connect(
-            'manual',
-            null,
-            '::',
-            $this->username,
-            $this->password
-        );
+        try {
+            $configured = new MySQL();
+            $configured->connect(
+                'manual',
+                null,
+                '::',
+                $this->username,
+                $this->password
+            );
 
-        $connection = $configured->getConnection();
+            $connection = $configured->getConnection();
 
-        static::assertSame(get_class($connection), MySQL::class);
+            static::assertSame(get_class($connection), MySQL::class);
+        } catch (Exception $e) {
+            static::markTestSkipped(
+                sprintf(
+                    'Can not perform test %s due to %s (%d)',
+                    __FUNCTION__,
+                    $e->getMessage(),
+                    (int)$e->getCode()
+                )
+            );
+        }
     }
 
     /**
@@ -682,18 +694,29 @@ class DatabaseTest extends TestCase
      */
     public function ipv6ModConnect()
     {
-        $configured = new MODULE_DATABASE();
-        $configured->connect(
-            'manual',
-            null,
-            '::',
-            $this->username,
-            $this->password
-        );
+        try {
+            $configured = new MODULE_DATABASE();
+            $configured->connect(
+                'manual',
+                null,
+                '::',
+                $this->username,
+                $this->password
+            );
 
-        $connection = $configured->getConnection();
+            $connection = $configured->getConnection();
 
-        static::assertSame(get_class($connection), MySQL::class);
+            static::assertSame(get_class($connection), MySQL::class);
+        } catch (Exception $e) {
+            static::markTestSkipped(
+                sprintf(
+                    'Can not perform test %s due to %s (%d)',
+                    __FUNCTION__,
+                    $e->getMessage(),
+                    (int)$e->getCode()
+                )
+            );
+        }
     }
 
     /**
