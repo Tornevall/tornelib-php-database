@@ -85,6 +85,11 @@ class DatabaseConfig
     private $connection = [];
 
     /**
+     * @var array $queryResult
+     */
+    private $queryResult = [];
+
+    /**
      * @var int $defaultTimeout Default connect timeout if any.
      * @since 6.1.0
      */
@@ -169,15 +174,41 @@ class DatabaseConfig
 
     /**
      * @param string $database
-     * @param string $identifier
+     * @param string $identifierName
      * @return DatabaseConfig
      * @since 6.1.0
      */
-    public function setDatabase($database, $identifier = null)
+    public function setDatabase($database, $identifierName = null)
     {
-        $this->database[$this->getCurrentIdentifier($identifier)] = $database;
+        $this->database[$this->getCurrentIdentifier($identifierName)] = $database;
 
         return $this;
+    }
+
+    /**
+     * @param $result
+     * @param $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setResult($result, $identifierName = null)
+    {
+        $this->queryResult[$this->getCurrentIdentifier($identifierName)] = $result;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    public function getResult($identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+
+        return isset($this->queryResult[$currentIdentifier]) ?
+            $this->queryResult[$currentIdentifier] : null;
     }
 
     /**
@@ -496,17 +527,18 @@ class DatabaseConfig
 
     /**
      * @param $identifier
+     * @param bool $throwable
      * @return array
      * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function getConnection($identifier)
+    public function getConnection($identifier, $throwable = true)
     {
         $currentIdentifier = $this->getCurrentIdentifier($identifier);
         $return = isset($this->connection[$currentIdentifier]) ?
             $this->connection[$currentIdentifier] : null;
 
-        if (is_null($return)) {
+        if ($throwable && is_null($return)) {
             throw new ExceptionHandler(
                 sprintf(
                     'Database connection error: %s has not been initialized yet.',
