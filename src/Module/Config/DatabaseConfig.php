@@ -520,29 +520,15 @@ class DatabaseConfig
     }
 
     /**
-     * @param $insertId
-     * @param null $identifierName
+     * @param $connection
+     * @param null $identifier
      * @return DatabaseConfig
      * @since 6.1.0
      */
-    public function setLastInsertId($insertId, $identifierName = null)
+    public function setConnection($connection, $identifier = null)
     {
-        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
-        $this->lastInsertId[$currentIdentifier] = (int)$insertId;
+        $this->connection[$this->getCurrentIdentifier($identifier)] = $connection;
 
-        return $this;
-    }
-
-    /**
-     * @param $affectedRows
-     * @param null $identifierName
-     * @return $this
-     * @since 6.1.0
-     */
-    public function setAffectedRows($affectedRows, $identifierName = null)
-    {
-        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
-        $this->affectedRows[$currentIdentifier] = (int)$affectedRows;
         return $this;
     }
 
@@ -564,6 +550,19 @@ class DatabaseConfig
     }
 
     /**
+     * @param $affectedRows
+     * @param null $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setAffectedRows($affectedRows, $identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        $this->affectedRows[$currentIdentifier] = (int)$affectedRows;
+        return $this;
+    }
+
+    /**
      * @param null $identifierName
      * @return int
      * @since 6.1.0
@@ -578,6 +577,20 @@ class DatabaseConfig
         }
 
         return (int)$return;
+    }
+
+    /**
+     * @param $insertId
+     * @param null $identifierName
+     * @return DatabaseConfig
+     * @since 6.1.0
+     */
+    public function setLastInsertId($insertId, $identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        $this->lastInsertId[$currentIdentifier] = (int)$insertId;
+
+        return $this;
     }
 
     /**
@@ -607,19 +620,6 @@ class DatabaseConfig
             $return = $this->statements[$currentIdentifier];
         }
         return $return;
-    }
-
-    /**
-     * @param $connection
-     * @param null $identifier
-     * @return DatabaseConfig
-     * @since 6.1.0
-     */
-    public function setConnection($connection, $identifier = null)
-    {
-        $this->connection[$this->getCurrentIdentifier($identifier)] = $connection;
-
-        return $this;
     }
 
     /**
