@@ -1,7 +1,12 @@
 <?php
 
+/** @noinspection PhpComposerExtensionStubsInspection */
+
+/** @noinspection PhpDeprecationInspection */
+
 namespace TorneLIB\Helpers;
 
+use Exception;
 use TorneLIB\Model\Database\Drivers;
 
 /**
@@ -21,7 +26,7 @@ class DataHelper
      */
     public static function getEscaped($inputString = '', $driverType = Drivers::MYSQL_IMPROVED, $resource = null)
     {
-        return (new self())->escape($inputString = '', $driverType = Drivers::MYSQL_IMPROVED, $resource = null);
+        return (new self())->escape($inputString, $driverType, $resource);
     }
 
     /**
@@ -45,6 +50,7 @@ class DataHelper
         } elseif ($driverType === Drivers::MYSQL_PDO) {
             // The weakest way of stripping something
             $quotedString = $resource->quote($inputString);
+            /** @noinspection NotOptimalRegularExpressionsInspection */
             $return = preg_replace("@^'|'$@is", '', $quotedString);
         } elseif (Drivers::MYSQL_IMPROVED === $driverType) {
             $return = @mysql_real_escape_string(
@@ -67,14 +73,46 @@ class DataHelper
      */
     public function getEscapeDeprecated($inputString = null)
     {
-        if (version_compare(
-                phpversion(),
-                '5.3.0',
-                '<='
-            ) && function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
+        if (PHP_VERSION_ID <= 50300 &&
+            function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
             $inputString = stripslashes($inputString);
         }
 
         return addslashes($inputString);
+    }
+
+    /**
+     * Destructor helper. Closing connections that has not been closed yet.
+     * @param $config
+     * @param null $identifierName
+     * @return bool
+     * @since 6.1.0
+     */
+    public static function closeConnection($config, $identifierName = null)
+    {
+        $return = false;
+        $currentIdentifier = $config->getCurrentIdentifier($identifierName);
+        $currentDriver = $config->getPreferredDriver($currentIdentifier);
+        try {
+            $connection = $config->getConnection($currentIdentifier);
+        } catch (Exception $e) {
+            // No connections won't need closing.
+            return $return;
+        }
+
+        switch ($currentDriver) {
+            case Drivers::MYSQL_IMPROVED:
+                $return = @mysqli_close($connection);
+                break;
+            case Drivers::MYSQL_DEPRECATED:
+                $return = @mysql_close($connection);
+                break;
+            default:
+                // Not normally closing PDO.
+                $return = true;
+                break;
+        }
+
+        return $return;
     }
 }

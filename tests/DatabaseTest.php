@@ -285,6 +285,8 @@ class DatabaseTest extends TestCase
             $sql &&
             $switched === 'tornelib_tests'
         );
+
+        return $configured;
     }
 
     /**
@@ -449,6 +451,7 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
+     * @throws ExceptionHandler
      */
     public function getModImprovedQuery()
     {
@@ -465,6 +468,7 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
+     * @throws ExceptionHandler
      */
     public function getModDepQuery()
     {
@@ -484,7 +488,6 @@ class DatabaseTest extends TestCase
     /**
      * @test
      * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
      */
     public function getDirectImprovedQuery()
     {
@@ -500,9 +503,41 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test For those who badly need the old style escaping.
-     * @return mixed|string|null
+     * @test
      * @throws ExceptionHandler
+     */
+    public function getModPdoQuery()
+    {
+        /** @var MODULE_DATABASE $module */
+        if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_PDO)) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult && $module->getAffectedRows());
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getDirectPdoQuery()
+    {
+        /** @var MySQL $module */
+        if ($module = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO)) {
+            $module->setDatabase($this->database);
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
+
+            static::assertTrue($queryResult);
+        }
+    }
+
+    /**
+     * @test For those who badly need the old style escaping.
      */
     public function getInjection()
     {

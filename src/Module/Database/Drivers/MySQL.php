@@ -6,11 +6,14 @@
 
 namespace TorneLIB\Module\Database\Drivers;
 
+use Exception;
 use PDO;
 use PDOException;
+use PDOStatement;
 use TorneLIB\Config\Flag;
 use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
+use TorneLIB\Helpers\DataHelper;
 use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
@@ -25,22 +28,37 @@ class MySQL implements DatabaseInterface
 {
     /**
      * @var DatabaseConfig $CONFIG
+     * @since 6.1.0
      */
     private $CONFIG;
 
     /**
      * @var array $initDriver Indicates if driver is really initialized.
+     * @since 6.1.0
      */
     private $initDriver = [];
 
     /**
      * MySQL constructor.
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function __construct()
     {
         $this->CONFIG = new DatabaseConfig();
         $this->getInitializedDriver();
+    }
+
+    /**
+     * @since 6.1.0
+     */
+    public function __destruct()
+    {
+        $identifiers = $this->CONFIG->getIdentifiers();
+
+        foreach ($identifiers as $identifierName) {
+            DataHelper::closeConnection($this->CONFIG, $identifierName);
+        }
     }
 
     /**
@@ -53,19 +71,19 @@ class MySQL implements DatabaseInterface
     {
         $this->initDriver[$this->CONFIG->getCurrentIdentifier($identifier)] = true;
 
-        if ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_IMPROVED) &&
+        if ((is_null($forceDriver) || $forceDriver === Drivers::MYSQL_IMPROVED) &&
             Security::getCurrentFunctionState('mysqli_connect', false)
         ) {
-            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_IMPROVED, $identifier);
-        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_DEPRECATED) &&
+            $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifier);
+        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::MYSQL_DEPRECATED) &&
             Security::getCurrentFunctionState('mysql_connect', false)
         ) {
-            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_DEPRECATED, $identifier);
-        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::DRIVER_MYSQL_PDO) &&
+            $this->CONFIG->setPreferredDriver(Drivers::MYSQL_DEPRECATED, $identifier);
+        } elseif ((is_null($forceDriver) || $forceDriver === Drivers::MYSQL_PDO) &&
             Security::getCurrentClassState('PDO', false) &&
             $this->getCanPdo()
         ) {
-            $this->CONFIG->setPreferredDriver(Drivers::DRIVER_MYSQL_PDO, $identifier);
+            $this->CONFIG->setPreferredDriver(Drivers::MYSQL_PDO, $identifier);
         } else {
             throw new ExceptionHandler(
                 sprintf(
@@ -105,6 +123,28 @@ class MySQL implements DatabaseInterface
     }
 
     /**
+     * @param $inputString
+     * @param null $identifierName
+     * @return string
+     * @deprecated Escaping through datahelper is deprecated and should be avoided.
+     * @since 6.1.0
+     */
+    public function escape($inputString, $identifierName = null)
+    {
+        try {
+            $return = DataHelper::getEscaped(
+                $inputString,
+                $this->CONFIG->getPreferredDriver($identifierName),
+                $this->CONFIG->getConnection($identifierName)
+            );
+        } catch (Exception $e) {
+            $return = (new DataHelper())->getEscapeDeprecated($inputString);
+        }
+
+        return $return;
+    }
+
+    /**
      * @param DatabaseConfig $databaseConfig
      * @return $this|mixed
      */
@@ -115,9 +155,23 @@ class MySQL implements DatabaseInterface
         return $this;
     }
 
-    public function getLastInsertId()
+    /**
+     * @param null $identifierName
+     * @return int
+     * @since 6.1.0
+     */
+    public function getLastInsertId($identifierName = null)
     {
-        // TODO: Implement getLastInsertId() method.
+        return $this->CONFIG->getLastInsertId($identifierName);
+    }
+
+    /**
+     * @param null $identifierName
+     * @return int
+     */
+    public function getAffectedRows($identifierName = null)
+    {
+        return $this->CONFIG->getAffectedRows($identifierName);
     }
 
     /**
@@ -153,15 +207,15 @@ class MySQL implements DatabaseInterface
             $serverPassword
         );
 
-        switch ($this->getPreferredDriver($useIdentifier)) {
-            case Drivers::DRIVER_MYSQL_IMPROVED:
-                $return = $this->connect_mysqli($useIdentifier);
+        switch ($this->CONFIG->getPreferredDriver($useIdentifier)) {
+            case Drivers::MYSQL_IMPROVED:
+                $return = $this->getConnectionImproved($useIdentifier);
                 break;
-            case Drivers::DRIVER_MYSQL_DEPRECATED:
-                $return = $this->connect_mysql($useIdentifier);
+            case Drivers::MYSQL_DEPRECATED:
+                $return = $this->getConnectionDeprecated($useIdentifier);
                 break;
-            case Drivers::DRIVER_MYSQL_PDO:
-                $return = $this->connect_pdo($useIdentifier);
+            case Drivers::MYSQL_PDO:
+                $return = $this->getConnectionPdo($useIdentifier);
                 break;
 
             default:
@@ -170,7 +224,8 @@ class MySQL implements DatabaseInterface
                         '%s error in %s: could not find any proper driver to connect with.',
                         __FUNCTION__,
                         __CLASS__
-                    )
+                    ),
+                    Constants::LIB_DATABASE_DRIVER_UNAVAILABLE
                 );
                 break;
         }
@@ -205,7 +260,6 @@ class MySQL implements DatabaseInterface
     /**
      * @param null $identifier
      * @return int
-     * @noinspection PhpUnused
      */
     public function getPreferredDriver($identifier = null)
     {
@@ -213,32 +267,34 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param $identifier
+     * @param $identifierName
      * @return bool
      * @throws ExceptionHandler
-     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
-    private function connect_mysqli($identifier)
+    private function getConnectionImproved($identifierName)
     {
-        /** @var array|\mysqli $connection */
         $connection = @mysqli_connect(
-            $this->getServerHost($identifier),
-            $this->getServerUser($identifier),
-            $this->getServerPassword($identifier),
-            $this->getDatabase($identifier, false),
-            $this->getServerPort($identifier)
+            $this->getServerHost($identifierName),
+            $this->getServerUser($identifierName),
+            $this->getServerPassword($identifierName),
+            $this->getDatabase($identifierName, false),
+            $this->getServerPort($identifierName)
         );
 
-        if ((array)$connection) {
+        $this->getDatabaseError(mysqli_connect_error(), mysqli_connect_errno(), __FUNCTION__);
+        $this->getDatabaseError(
+            mysqli_error($connection),
+            mysqli_errno($connection),
+            __FUNCTION__
+        );
+
+        if (!empty($connection)) {
             $this->CONFIG->setConnection(
                 $connection,
-                $identifier
+                $identifierName
             );
         }
-
-        $this->getConnectError(mysqli_connect_error(), mysqli_connect_errno(), __FUNCTION__);
-        $this->getConnectError(mysqli_error($connection), mysqli_errno($connection), __FUNCTION__);
-        $this->setLocalServerOptions($identifier);
+        $this->setLocalServerOptions($identifierName);
 
         return is_object($connection);
     }
@@ -295,7 +351,7 @@ class MySQL implements DatabaseInterface
      * @param $fromFunction
      * @throws ExceptionHandler
      */
-    private function getConnectError($message, $code, $fromFunction)
+    private function getDatabaseError($message, $code, $fromFunction)
     {
         if ((int)$code) {
             $this->throwDatabaseException(
@@ -356,12 +412,12 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param $identifier
+     * @param $identifierName
      * @return bool
      * @throws ExceptionHandler
      * @noinspection PhpUndefinedMethodInspection
      */
-    private function connect_mysql($identifier)
+    private function getConnectionDeprecated($identifierName)
     {
         // Special occasions.
         if (!Flag::getFlag('SQL_NEW_LINK')) {
@@ -369,17 +425,16 @@ class MySQL implements DatabaseInterface
         }
 
         $connection = @mysql_connect(
-            $this->getServerHost($identifier),
-            $this->getServerUser($identifier),
-            $this->getServerPassword($identifier),
+            $this->getServerHost($identifierName),
+            $this->getServerUser($identifierName),
+            $this->getServerPassword($identifierName),
             Flag::getFlag('SQL_NEW_LINK')
         );
 
         if (is_resource($connection)) {
-            /** @noinspection PhpParamsInspection */
             $this->CONFIG->setConnection(
                 $connection,
-                $identifier
+                $identifierName
             );
         }
 
@@ -389,35 +444,39 @@ class MySQL implements DatabaseInterface
                 $this->CONFIG->getServerHost()
             ) : mysql_error();
             $errorCode = !mysql_errno() ? Constants::LIB_DATABASE_CONNECTION_EXCEPTION : mysql_errno();
-            $this->getConnectError($errorMessage, $errorCode, __FUNCTION__);
+            $this->getDatabaseError($errorMessage, $errorCode, __FUNCTION__);
         } else {
-            $this->getConnectError(mysql_error($connection), mysql_errno($connection), __FUNCTION__);
+            $this->getDatabaseError(
+                mysql_error($connection),
+                mysql_errno($connection),
+                __FUNCTION__
+            );
         }
 
         return is_resource($connection);
     }
 
     /**
-     * @param $identifier
+     * @param $identifierName
      * @return bool
      * @throws ExceptionHandler
      */
-    private function connect_pdo($identifier)
+    private function getConnectionPdo($identifierName)
     {
         $connection = null;
         $DSN = sprintf(
             'mysql:dbname=%s;host=%s',
-            $this->CONFIG->getDatabase($identifier, false),
-            $this->CONFIG->getServerHost($identifier)
+            $this->CONFIG->getDatabase($identifierName, false),
+            $this->CONFIG->getServerHost($identifierName)
         );
 
         $PDOException = null;
         try {
             $connection = new PDO(
                 $DSN,
-                $this->getServerUser($identifier),
-                $this->getServerPassword($identifier),
-                $this->getServerOptions($identifier)
+                $this->getServerUser($identifierName),
+                $this->getServerPassword($identifierName),
+                $this->getServerOptions($identifierName)
             );
         } catch (PDOException $PDOException) {
             // Wait for it.
@@ -425,8 +484,7 @@ class MySQL implements DatabaseInterface
 
         if (is_object($connection)) {
             $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            /** @noinspection PhpParamsInspection */
-            $this->CONFIG->setConnection($connection, $identifier);
+            $this->CONFIG->setConnection($connection, $identifierName);
         } else {
             $this->getPdoError($connection, $PDOException);
         }
@@ -441,6 +499,15 @@ class MySQL implements DatabaseInterface
     public function getServerOptions($identifierName = null)
     {
         return $this->CONFIG->getServerOptions($identifierName);
+    }
+
+    /**
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getConnection()
+    {
+        return $this;
     }
 
     /**
@@ -482,8 +549,10 @@ class MySQL implements DatabaseInterface
      * @return int
      * @throws ExceptionHandler
      */
-    public function setPreferredDriver($preferredDriver = Drivers::DRIVER_MYSQL_IMPROVED, $identifier = null)
+    public function setPreferredDriver($preferredDriver = Drivers::MYSQL_IMPROVED, $identifier = null)
     {
+        $this->CONFIG->setPreferredDriver($preferredDriver, $identifier);
+
         return $this->getInitializedDriver($preferredDriver, $identifier);
     }
 
@@ -496,17 +565,32 @@ class MySQL implements DatabaseInterface
      */
     public function setDatabase($schemaName, $identifierName = null)
     {
-        $this->CONFIG->setDatabase($schemaName, $identifierName);
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+        $this->CONFIG->setDatabase($schemaName, $useIdentifier);
 
-        if ($connection = $this->CONFIG->getConnection($identifierName)) {
-            if ($this->getPreferredDriver($identifierName) === Drivers::DRIVER_MYSQL_IMPROVED) {
-                mysqli_select_db($connection, $schemaName);
-            } elseif ($this->getPreferredDriver($identifierName) === Drivers::DRIVER_MYSQL_DEPRECATED) {
-                mysql_select_db($schemaName, $connection);
-            } elseif ($this->getPreferredDriver($identifierName) === Drivers::DRIVER_MYSQL_PDO) {
+        if (!empty($connection = $this->CONFIG->getConnection($useIdentifier))) {
+            if ($this->CONFIG->getPreferredDriver($useIdentifier) === Drivers::MYSQL_IMPROVED) {
+                if (!mysqli_select_db($connection, $schemaName)) {
+                    $this->getDatabaseError(
+                        mysqli_error($connection),
+                        mysqli_errno($connection),
+                        __FUNCTION__
+                    );
+                }
+            } elseif ($this->CONFIG->getPreferredDriver($useIdentifier) === Drivers::MYSQL_DEPRECATED) {
+                if (!mysql_select_db($schemaName, $connection)) {
+                    $this->getDatabaseError(
+                        mysql_error($connection),
+                        mysql_errno($connection),
+                        __FUNCTION__
+                    );
+                }
+            } elseif ($this->CONFIG->getPreferredDriver($useIdentifier) === Drivers::MYSQL_PDO) {
                 if (method_exists($connection, "select_db")) {
                     $connection->select_db($schemaName);
                 } else {
+                    // Very specific for PDO.
+                    /** @noinspection PhpUndefinedMethodInspection */
                     $connection->query("use " . $schemaName);
                 }
             }
@@ -591,7 +675,7 @@ class MySQL implements DatabaseInterface
 
     /**
      * @param null $identifierName
-     * @return string
+     * @return Types
      */
     public function getServerType($identifierName = null)
     {
@@ -608,9 +692,210 @@ class MySQL implements DatabaseInterface
         return $this->CONFIG->setServerOptions($serverOptions, $identifierName);
     }
 
-    public function setQuery($queryString, $parameters)
+    /**
+     * @param array $parameters
+     * @return array
+     * @since 6.1.0
+     */
+    private function getParameters($parameters = [])
     {
-        // TODO: Implement setQuery() method.
+        if (!is_array($parameters)) {
+            $parameters = (array)$parameters;
+        }
+        return $parameters;
+    }
+
+    /**
+     * @param $statement
+     * @param $parameters
+     * @return array
+     * @since 6.1.0
+     */
+    private function setPreparedStatement($statement, $parameters)
+    {
+        $return = [$statement, str_pad("", count($parameters), "s")];
+        foreach ($this->getParameters($parameters) as $key => $value) {
+            $return[] =& $parameters[$key];
+        }
+        if (count($parameters)) {
+            mysqli_stmt_bind_param(...$return);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $statement
+     * @param $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromImproved($statement, $identifierName = null)
+    {
+        $this->CONFIG->setStatement($statement, $identifierName);
+        /** @noinspection PhpParamsInspection */
+        $this->CONFIG->setLastInsertId(
+            mysqli_insert_id(
+                $this->CONFIG->getConnection($identifierName)
+            ),
+            $identifierName
+        );
+        if (isset($statement->affected_rows)) {
+            $this->CONFIG->setAffectedRows($statement->affected_rows, $identifierName);
+        }
+
+        return ($this->CONFIG->getAffectedRows($identifierName) || $this->CONFIG->getLastInsertId($identifierName));
+    }
+
+    /**
+     * @param resource $statement
+     * @param $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromDeprecated($statement, $identifierName = null)
+    {
+        $this->CONFIG->setStatement($statement, $identifierName);
+        $this->CONFIG->setLastInsertId(
+            mysql_insert_id($this->CONFIG->getConnection($identifierName)),
+            $identifierName
+        );
+        $this->CONFIG->setAffectedRows(
+            mysql_affected_rows($this->CONFIG->getConnection($identifierName)),
+            $identifierName
+        );
+
+        return (
+            $this->CONFIG->getAffectedRows($identifierName) ||
+            $this->CONFIG->getLastInsertId($identifierName) ||
+            !mysql_errno($this->CONFIG->getConnection($identifierName))
+        );
+    }
+
+    /**
+     * @param $statement
+     * @param null $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromPdo($statement, $identifierName = null)
+    {
+        $connection = $this->CONFIG->getConnection($identifierName);
+        $this->CONFIG->setLastInsertId($connection->lastInsertId(), $identifierName);
+        $this->CONFIG->setAffectedRows($statement->rowCount(), $identifierName);
+
+        return (
+            $this->CONFIG->getAffectedRows($identifierName) ||
+            $this->CONFIG->getLastInsertId($identifierName)
+        );
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    public function getStatement($identifierName = null)
+    {
+        return $this->CONFIG->getStatement($identifierName);
+    }
+
+    /**
+     * Queries in 6.1.0 is always based on prepares, not raw.
+     * @param $queryString
+     * @param $parameters
+     * @param null $identifierName
+     * @return null
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     * @noinspection PhpParamsInspection
+     */
+    private function setQueryImproved($queryString, $parameters = [], $identifierName = null)
+    {
+        $return = null;
+
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+        $preparedStatement = mysqli_prepare(
+            $this->CONFIG->getConnection($useIdentifier),
+            $queryString
+        );
+
+        if (!empty($preparedStatement)) {
+            $this->setPreparedStatement($preparedStatement, $parameters);
+            // Laying our trust in straight forward PHP >5.3 responses.
+            mysqli_stmt_execute($preparedStatement);
+            $preparedStatement->get_result();
+
+            if (is_object($preparedStatement)) {
+                $return = $this->getDataFromImproved(
+                    $preparedStatement,
+                    $useIdentifier
+                );
+            }
+        }
+
+        $this->getDatabaseError(
+            mysqli_error($this->CONFIG->getConnection($useIdentifier)),
+            mysqli_errno($this->CONFIG->getConnection($useIdentifier)),
+            __FUNCTION__
+        );
+
+        return $return;
+    }
+
+    /**
+     * @param string $queryString
+     * @param array $parameters
+     * @param string $identifierName
+     * @return mixed
+     * @throws ExceptionHandler
+     */
+    public function setQuery($queryString, $parameters = [], $identifierName = null)
+    {
+        $return = null;
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+
+        switch ($this->CONFIG->getPreferredDriver($useIdentifier)) {
+            case Drivers::MYSQL_IMPROVED:
+                $return = $this->setQueryImproved(
+                    $queryString,
+                    $this->getParameters($parameters),
+                    $useIdentifier
+                );
+                break;
+            case Drivers::MYSQL_DEPRECATED:
+                $return = $this->setQueryDeprecated(
+                    $queryString,
+                    $this->getParameters($parameters),
+                    $useIdentifier
+                );
+                break;
+            case Drivers::MYSQL_PDO:
+                $return = $this->setQueryPdo(
+                    $queryString,
+                    $this->getParameters($parameters),
+                    $useIdentifier
+                );
+                break;
+            default:
+                break;
+        }
+
+        if (is_null($return)) {
+            throw new ExceptionHandler(
+                sprintf(
+                    '%s error in %s: could not find any proper query driver or query failed.',
+                    __FUNCTION__,
+                    __CLASS__
+                ),
+                Constants::LIB_DATABASE_DRIVER_UNAVAILABLE
+            );
+        }
+
+        return $return;
     }
 
     public function getFirst($queryString, $parameters)
@@ -621,5 +906,92 @@ class MySQL implements DatabaseInterface
     public function getRow($resource, $assoc = true)
     {
         // TODO: Implement getRow() method.
+    }
+
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @return string
+     * @since 6.1.0
+     */
+    public function getHalfSafeString($queryString, $parameters)
+    {
+        $queryString = preg_replace('/ \?$/', ' %s', $queryString);
+        $queryString = preg_replace("/ \? /", ' %s ', $queryString);
+
+        $newArray = [];
+        foreach ($parameters as $key => $value) {
+            $newArray[$key] = sprintf("'%s'", mysql_real_escape_string($value));
+        }
+
+        return sprintf(
+            $queryString,
+            ...$newArray
+        );
+    }
+
+    /**
+     * Query with deprecated driver (Unsafe!).
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @return bool|resource
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function setQueryDeprecated($queryString, $parameters = [], $identifierName = null)
+    {
+        $return = null;
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+
+        $halfSafeString = $this->getHalfSafeString(
+            $queryString,
+            $parameters
+        );
+        $queryResponse = mysql_query(
+            $halfSafeString,
+            $this->CONFIG->getConnection($useIdentifier)
+        );
+
+        $this->getDatabaseError(
+            mysql_error($this->CONFIG->getConnection($useIdentifier)),
+            mysql_errno($this->CONFIG->getConnection($useIdentifier)),
+            __FUNCTION__
+        );
+
+        if ($properReturn = $this->getDataFromDeprecated($queryResponse, $useIdentifier)) {
+            $return = $properReturn;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @return null
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function setQueryPdo($queryString, $parameters = [], $identifierName = null)
+    {
+        /** @var PDO $connection */
+        $connection = $this->CONFIG->getConnection($identifierName);
+        /** @var PDOStatement $statementPrepare */
+        $statementPrepare = $connection->prepare($queryString);
+        $return = $statementPrepare->execute($parameters);
+        $this->getDatabaseError(
+            implode(', ', $connection->errorInfo()),
+            $connection->errorCode(),
+            __FUNCTION__
+        );
+
+        $this->getDataFromPdo($statementPrepare, $identifierName);
+
+        return ($return ||
+            $this->CONFIG->getLastInsertId($identifierName) ||
+            $this->CONFIG->getAffectedRows($identifierName)
+        );
     }
 }

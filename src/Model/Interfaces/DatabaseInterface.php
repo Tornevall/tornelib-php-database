@@ -50,7 +50,7 @@ interface DatabaseInterface
      * @return mixed
      */
     public function connect(
-        $serverIdentifier = 'localserver',
+        $serverIdentifier = 'default',
         $serverOptions = [],
         $serverHostAddr = '127.0.0.1',
         $serverUsername = 'username',

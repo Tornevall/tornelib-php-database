@@ -75,7 +75,7 @@ class DatabaseConfig
      * @var array
      * @since 6.1.0
      */
-    private $serverOptions = [];
+    private $serverOptions;
 
     /**
      * @var array Collection of established connection.
@@ -102,12 +102,35 @@ class DatabaseConfig
     ];
 
     /**
+     * @var array $lastInsertId
+     * @since 6.1.0
+     */
+    private $lastInsertId = [
+        'default' => null,
+    ];
+
+    /**
+     * @var array $affectedRows
+     * @since 6.1.0
+     */
+    private $affectedRows = [
+        'default' => null,
+    ];
+
+    /**
+     * @var array $statements
+     * @since 6.1.0
+     */
+    private $statements = [
+        'default' => null,
+    ];
+
+    /**
      * DatabaseConfig constructor.
      * @todo 6.0-compat.
      */
     public function __construct()
     {
-        // Reset.
         $this->serverOptions = [];
     }
 
@@ -306,7 +329,7 @@ class DatabaseConfig
 
     /**
      * @param null $identifier
-     * @return null|string
+     * @return Types
      * @since 6.1.0
      */
     public function getServerType($identifier = null)
@@ -495,7 +518,97 @@ class DatabaseConfig
     }
 
     /**
-     * @param array $connection
+     * @param $insertId
+     * @param null $identifierName
+     * @return DatabaseConfig
+     * @since 6.1.0
+     */
+    public function setLastInsertId($insertId, $identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        $this->lastInsertId[$currentIdentifier] = (int)$insertId;
+
+        return $this;
+    }
+
+    /**
+     * @param $affectedRows
+     * @param null $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setAffectedRows($affectedRows, $identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        $this->affectedRows[$currentIdentifier] = (int)$affectedRows;
+        return $this;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return int
+     * @since 6.1.0
+     */
+    public function getAffectedRows($identifierName = null)
+    {
+        $return = null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+
+        if (isset($this->affectedRows[$currentIdentifier])) {
+            $return = $this->affectedRows[$currentIdentifier];
+        }
+
+        return (int)$return;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return int
+     * @since 6.1.0
+     */
+    public function getLastInsertId($identifierName = null)
+    {
+        $return = null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+
+        if (isset($this->lastInsertId[$currentIdentifier])) {
+            $return = $this->lastInsertId[$currentIdentifier];
+        }
+
+        return (int)$return;
+    }
+
+    /**
+     * @param $statement
+     * @param null $identifierName
+     * @return $this
+     * @since 6.1.0
+     */
+    public function setStatement($statement, $identifierName = null)
+    {
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        $this->statements[$currentIdentifier] = $statement;
+
+        return $this;
+    }
+
+    /**
+     * @param null $identifierName
+     * @return mixed|null
+     * @since 6.1.0
+     */
+    public function getStatement($identifierName = null)
+    {
+        $return = null;
+        $currentIdentifier = $this->getCurrentIdentifier($identifierName);
+        if (isset($this->statements[$currentIdentifier])) {
+            $return = $this->statements[$currentIdentifier];
+        }
+        return $return;
+    }
+
+    /**
+     * @param $connection
      * @param null $identifier
      * @return DatabaseConfig
      * @since 6.1.0
@@ -535,7 +648,6 @@ class DatabaseConfig
     /**
      * @return int
      * @since 6.1.0
-     * @noinspection PhpUnused
      */
     public function getDefaultTimeout()
     {
@@ -545,7 +657,6 @@ class DatabaseConfig
     /**
      * @param int $defaultTimeout
      * @since 6.1.0
-     * @noinspection PhpUnused
      */
     public function setDefaultTimeout($defaultTimeout)
     {
@@ -561,8 +672,7 @@ class DatabaseConfig
     {
         $currentIdentifier = $this->getCurrentIdentifier($identifier);
         return isset($this->timeout[$currentIdentifier]) ?
-            (int)$this->timeout[$currentIdentifier] : (int)$this->defaultTimeout;
-
+            (int)$this->timeout[$currentIdentifier] : $this->defaultTimeout;
     }
 
     /**
