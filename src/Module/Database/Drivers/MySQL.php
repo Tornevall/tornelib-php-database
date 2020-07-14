@@ -592,7 +592,8 @@ class MySQL implements DatabaseInterface
         $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
         $this->CONFIG->setDatabase($schemaName, $useIdentifier);
 
-        if (!empty($connection = $this->CONFIG->getConnection($useIdentifier))) {
+        // Ignore unexistent connections if not set, as this could be running in pre-init.
+        if (!empty($connection = $this->CONFIG->getConnection($useIdentifier, false))) {
             if ($this->CONFIG->getPreferredDriver($useIdentifier) === Drivers::MYSQL_IMPROVED) {
                 if (!mysqli_select_db($connection, $schemaName)) {
                     $this->getDatabaseError(
@@ -814,6 +815,7 @@ class MySQL implements DatabaseInterface
     private function getDataFromPdo($statement, $identifierName = null)
     {
         $connection = $this->CONFIG->getConnection($identifierName);
+        $this->CONFIG->setStatement($statement, $identifierName);
         $this->CONFIG->setLastInsertId($connection->lastInsertId(), $identifierName);
         $this->CONFIG->setAffectedRows($statement->rowCount(), $identifierName);
 
@@ -857,7 +859,7 @@ class MySQL implements DatabaseInterface
             $this->setPreparedStatement($preparedStatement, $parameters);
             // Laying our trust in straight forward PHP >5.3 responses.
             mysqli_stmt_execute($preparedStatement);
-            $preparedStatement->get_result();
+            $this->CONFIG->setResult($preparedStatement->get_result(), $identifierName);
 
             if (is_object($preparedStatement)) {
                 $return = $this->getDataFromImproved(
@@ -942,15 +944,88 @@ class MySQL implements DatabaseInterface
 
     /**
      * @param $resource
+     * @return $this
+     */
+    private function getProperResource($resource)
+    {
+        $return = false;
+
+        if (!is_null($resource) && get_class($resource) == 'mysqli') {
+            $return = $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifierName);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param resource $resource Not necessary.
      * @param null $identifierName
      * @param bool $assoc
      * @return mixed|void
      * @since 6.1.0
-     * @todo Make it happen.
      */
-    public function getRow($resource, $identifierName = null, $assoc = true)
+    public function getRow($resource = null, $identifierName = null, $assoc = true)
     {
+        $return = null;
+        $testConnection = $this->getProperResource($resource);
 
+        // Initialize primary data values to use. Users are on their own here,
+        // if they are not using the identifierSystem.
+        $result = $resource;
+
+        // For PDO
+        $statement = null;
+
+        if (!$testConnection) {
+            $result = $this->CONFIG->getResult($identifierName);
+            $statement = $this->CONFIG->getStatement($identifierName);
+        }
+
+        switch ($this->CONFIG->getPreferredDriver($identifierName)) {
+            case Drivers::MYSQL_IMPROVED:
+                if ($assoc) {
+                    $return = mysqli_fetch_assoc($result);
+                } elseif ((int)$assoc === 2) {
+                    $return = mysqli_fetch_array($result);
+                } else {
+                    $return = mysqli_fetch_object($result);
+                }
+                break;
+            case Drivers::MYSQL_DEPRECATED:
+                if ($assoc) {
+                    $return = mysql_fetch_assoc($result);
+                } else {
+                    $return = mysql_fetch_object($result);
+                }
+                break;
+            case Drivers::MYSQL_PDO:
+                if (method_exists($statement, 'fetchObject')) {
+                    if ($assoc) {
+                        // Fetch an object and cast it as an array.
+                        $return = (array)$statement->fetchObject();
+                    } else {
+                        $return = $statement->fetchObject();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @throws ExceptionHandler
+     * @deprecate Use setQuery.
+     * @since 6.1.0
+     */
+    public function query($queryString, $parameters = [], $identifierName = null)
+    {
+        return $this->setQuery($queryString, $parameters, $identifierName);
     }
 
     /**
@@ -958,8 +1033,9 @@ class MySQL implements DatabaseInterface
      * @param $resource
      * @param bool $assoc
      * @return mixed|void
-     * @since 6.1.0
+     * @throws ExceptionHandler
      * @deprecated Use getRow instead().
+     * @since 6.1.0
      */
     public function fetch($resource = null, $assoc = true)
     {
@@ -1017,6 +1093,7 @@ class MySQL implements DatabaseInterface
             __FUNCTION__
         );
 
+        $this->CONFIG->setResult($queryResponse, $identifierName);
         if ($properReturn = $this->getDataFromDeprecated($queryResponse, $useIdentifier)) {
             $return = $properReturn;
         }
@@ -1039,6 +1116,8 @@ class MySQL implements DatabaseInterface
         /** @var PDOStatement $statementPrepare */
         $statementPrepare = $connection->prepare($queryString);
         $return = $statementPrepare->execute($parameters);
+        $this->CONFIG->setResult($return, $identifierName);
+
         $this->getDatabaseError(
             implode(', ', $connection->errorInfo()),
             $connection->errorCode(),

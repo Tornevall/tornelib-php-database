@@ -439,6 +439,7 @@ class DatabaseTest extends TestCase
     private function getConnection($module, $preferredDriver = Drivers::MYSQL_IMPROVED)
     {
         $module->setPreferredDriver($preferredDriver);
+        $module->setDatabase($this->database);
         $module->connect(
             'default',
             [],
@@ -446,6 +447,8 @@ class DatabaseTest extends TestCase
             $this->username,
             $this->password
         );
+        $module->setDatabase($this->database);
+
         return $module->getConnection();
     }
 
@@ -457,7 +460,6 @@ class DatabaseTest extends TestCase
     {
         /** @var MODULE_DATABASE $module */
         if ($module = $this->getConnection(new MODULE_DATABASE())) {
-            $module->setDatabase($this->database);
             $queryResult = $module->setQuery(
                 'SELECT * FROM tests'
             );
@@ -479,7 +481,6 @@ class DatabaseTest extends TestCase
         /** @var MODULE_DATABASE $module */
         if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_DEPRECATED)) {
             $module->setPreferredDriver(Drivers::MYSQL_DEPRECATED);
-            $module->setDatabase($this->database);
             $queryResult = $module->setQuery(
                 'SELECT * FROM tests WHERE data LIKE ?',
                 "%"
@@ -497,7 +498,6 @@ class DatabaseTest extends TestCase
     {
         /** @var MySQL $module */
         if ($module = $this->getConnection(new MySQL())) {
-            $module->setDatabase($this->database);
             $queryResult = $module->setQuery(
                 'SELECT * FROM tests'
             );
@@ -514,7 +514,6 @@ class DatabaseTest extends TestCase
     {
         /** @var MODULE_DATABASE $module */
         if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_PDO)) {
-            $module->setDatabase($this->database);
             $queryResult = $module->setQuery(
                 'SELECT * FROM tests'
             );
@@ -531,7 +530,6 @@ class DatabaseTest extends TestCase
     {
         /** @var MySQL $module */
         if ($module = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO)) {
-            $module->setDatabase($this->database);
             $queryResult = $module->setQuery(
                 'SELECT * FROM tests'
             );
@@ -552,5 +550,101 @@ class DatabaseTest extends TestCase
             $escapeFirst === "\'" &&
             $escapeSecond === "\'"
         );
+    }
+
+    /**
+     * @test
+     */
+    public function insertRows($helper = false)
+    {
+        $connection = $this->getConnection(new MySQL());
+        $count = 0;
+        $success = 0;
+        while ($count++ < 5) {
+            $success += $connection->setQuery('INSERT INTO tests (data) VALUES (?)', rand(1000, 2000));
+        }
+        if (!$helper) {
+            static::assertEquals(5, $success);
+            return;
+        }
+    }
+
+    /**
+     * @test
+     * Using deprecated query method.
+     * @throws ExceptionHandler
+     */
+    public function getRowImprovedSql()
+    {
+        $this->insertRows();
+
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL());
+        $connection->query('SELECT * FROM tests');
+        $first = $connection->getRow();
+        $second = $connection->getRow();
+
+        static::assertTrue(
+            is_array($first) && is_array($second)
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getRowImprovedMod()
+    {
+        $this->insertRows();
+
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MODULE_DATABASE());
+        $connection->query('SELECT * FROM tests');
+        $first = $connection->getRow();
+        $second = $connection->getRow();
+
+        static::assertTrue(
+            is_array($first) && is_array($second)
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getRowDeprecated()
+    {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+
+        $this->insertRows();
+        $connection = $this->getConnection(new MySQL(), Drivers::MYSQL_DEPRECATED);
+        $connection->query('SELECT * FROM tests');
+        $first = $connection->getRow();
+        $second = $connection->getRow();
+
+        static::assertTrue(
+            is_array($first) && is_array($second)
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getRowPdo()
+    {
+        $this->insertRows();
+        $connection = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO);
+        $connection->query('SELECT * FROM tests');
+        $first = $connection->getRow();
+        $second = $connection->getRow();
+
+        static::assertTrue(
+            is_array($first) && is_array($second)
+        );
+
     }
 }
