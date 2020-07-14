@@ -49,6 +49,17 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
+     * @param null $resource
+     * @param bool $assoc
+     * @since 6.1.0
+     * @deprecated Use getRow instead().
+     */
+    public function fetch($resource = null, $assoc = true)
+    {
+        $this->database->fetch($resource, $assoc);
+    }
+
+    /**
      * @since 6.1.0
      */
     public function __destruct()
@@ -249,20 +260,45 @@ class MODULE_DATABASE implements DatabaseInterface
                 $serverOptions = [];
             }
         }
+
+        // Initialize proper database if it not already exist.
         if (is_null($this->database)) {
             $this->setServerType($serverType, $serverIdentifier);
-            $this->CONFIG->setDatabase($schemaName, $serverIdentifier);
         }
-
         $this->setPreferredDriverOverrider($serverType, $serverIdentifier);
 
-        return $this->database->connect(
+        $return = $this->database->connect(
             $serverIdentifier,
             $serverOptions,
             $serverHostAddr,
             $serverUsername,
             $serverPassword
         );
+        $this->setPreparedEarlySchema($schemaName, $serverIdentifier);
+
+        return $return;
+    }
+
+    /**
+     * Prepare schema at initialization state.
+     * @param $schemaName
+     * @param $serverIdentifier
+     * @return bool
+     */
+    private function setPreparedEarlySchema($schemaName, $serverIdentifier)
+    {
+        $return = false;
+        if (!empty($schemaName)) {
+            $this->CONFIG->setDatabase($schemaName, $serverIdentifier);
+        }
+        try {
+            $currentSchema = $this->CONFIG->getDatabase($serverIdentifier);
+            $return = $this->database->setDatabase($currentSchema, $serverIdentifier);
+
+        } catch (Exception $schemaException) {
+        }
+
+        return $return;
     }
 
     /**
@@ -504,12 +540,15 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * getRow (prior: fetch first row)
-     * @param $resource
+     * @param null $resource
+     * @param null $identifierName
      * @param bool $assoc
-     * @return mixed
+     * @return mixed|void
+     * @since 6.1.0
      */
-    public function getRow($resource, $assoc = true)
+    public function getRow($resource = null, $identifierName = null, $assoc = true)
     {
-        return $this->database->getRow($resource, $assoc);
+        return $this->database->getRow($resource, $identifierName, $assoc);
     }
+
 }
