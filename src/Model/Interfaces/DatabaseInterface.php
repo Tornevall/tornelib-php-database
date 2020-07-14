@@ -187,19 +187,22 @@ interface DatabaseInterface
      * setQuery (query).
      * @param string $queryString
      * @param array $parameters
+     * @param null $identifierName
      * @return mixed
      * @since 6.1.0
      */
-    public function setQuery($queryString, $parameters);
+    public function setQuery($queryString, $parameters = [], $identifierName = null);
 
     /**
      * getFirst (prior: query_first).
      * @param string $queryString
      * @param array $parameters
+     * @param null $identifierName
+     * @param bool $assoc
      * @return mixed
      * @since 6.1.0
      */
-    public function getFirst($queryString, $parameters);
+    public function getFirst($queryString, $parameters = [], $identifierName = null, $assoc = true);
 
     /**
      * getRow (prior: fetch first row)

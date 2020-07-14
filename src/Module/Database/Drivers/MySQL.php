@@ -718,12 +718,32 @@ class MySQL implements DatabaseInterface
     /**
      * @param string $queryString
      * @param array $parameters
+     * @param null $identifierName
+     * @param bool $assoc
      * @return mixed|void
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
-    public function getFirst($queryString, $parameters)
+    public function getFirst($queryString, $parameters = [], $identifierName = null, $assoc = true)
     {
-        // TODO: Implement getFirst() method.
+        $return = null;
+        if ($this->setQuery($queryString, $parameters, $identifierName)) {
+            $return = $this->getRow(null, $identifierName, $assoc);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $querystring
+     * @param $parameters
+     * @return array|mixed|void|null
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    public function query_first($querystring, $parameters = [])
+    {
+        return $this->getFirst($querystring, $parameters);
     }
 
     /**
@@ -1046,6 +1066,7 @@ class MySQL implements DatabaseInterface
      * @param null $identifierName
      * @param bool $assoc
      * @return mixed|void
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getRow($resource = null, $identifierName = null, $assoc = true)
