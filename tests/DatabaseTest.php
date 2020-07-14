@@ -787,6 +787,25 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
+    public function getQueryFirstSafe()
+    {
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO);
+        //$dbRow = $connection->getResponseRow('SELECT * FROM tests LIMIT 1');
+        $connection->setQuery('SELECT * FROM tests');
+        $dbRow = $connection->getRow(null, null, 3);
+
+        static::assertNotSame(
+            $dbRow->getDataIndex(),
+            ''
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
     public function getFirstMod()
     {
         $this->insertRows();
