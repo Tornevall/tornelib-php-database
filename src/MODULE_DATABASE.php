@@ -7,10 +7,12 @@ use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\DataHelper;
 use TorneLIB\Helpers\Version;
+use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
+use TorneLIB\Utils\Security;
 
 try {
     Version::getRequiredVersion();
@@ -41,6 +43,7 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * MODULE_DATABASE constructor.
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function __construct()
@@ -322,6 +325,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $serverType
      * @param $serverIdentifier
      * @return MODULE_DATABASE
+     * @throws ExceptionHandler
      */
     private function setPreferredDriverOverrider($serverType, $serverIdentifier)
     {

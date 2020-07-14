@@ -190,7 +190,7 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
-    public function deprecatedCall()
+    public function getCallFromDeprecatedModule()
     {
         $unimpl = false;
         try {
@@ -330,6 +330,11 @@ class DatabaseTest extends TestCase
      */
     public function connectFailDeprecated()
     {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+
         static::expectException(ExceptionHandler::class);
 
         $sql = new MySQL();
@@ -396,7 +401,7 @@ class DatabaseTest extends TestCase
      * @test
      * @throws ExceptionHandler
      */
-    public function connectDeprecatedModule()
+    public function connectPdoDeprecatedModule()
     {
         $sql = new MODULE_DATABASE();
         $sql->setServerType(Types::MYSQL);
@@ -658,18 +663,60 @@ class DatabaseTest extends TestCase
      */
     public function ipv6Connect()
     {
-        $configured = new MySQL();
-        $configured->connect(
-            'manual',
-            null,
-            '::',
-            $this->username,
-            $this->password
-        );
+        try {
+            $configured = new MySQL();
+            $configured->connect(
+                'manual',
+                null,
+                '::',
+                $this->username,
+                $this->password
+            );
 
-        $connection = $configured->getConnection();
+            $connection = $configured->getConnection();
 
-        static::assertSame(get_class($connection), MySQL::class);
+            static::assertSame(get_class($connection), MySQL::class);
+        } catch (Exception $e) {
+            static::markTestSkipped(
+                sprintf(
+                    'Can not perform test %s due to %s (%d)',
+                    __FUNCTION__,
+                    $e->getMessage(),
+                    (int)$e->getCode()
+                )
+            );
+        }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function ipv6ModConnect()
+    {
+        try {
+            $configured = new MODULE_DATABASE();
+            $configured->connect(
+                'manual',
+                null,
+                '::',
+                $this->username,
+                $this->password
+            );
+
+            $connection = $configured->getConnection();
+
+            static::assertSame(get_class($connection), MySQL::class);
+        } catch (Exception $e) {
+            static::markTestSkipped(
+                sprintf(
+                    'Can not perform test %s due to %s (%d)',
+                    __FUNCTION__,
+                    $e->getMessage(),
+                    (int)$e->getCode()
+                )
+            );
+        }
     }
 
     /**
