@@ -51,18 +51,6 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @since 6.1.0
-     */
-    public function __destruct()
-    {
-        $identifiers = $this->CONFIG->getIdentifiers();
-
-        foreach ($identifiers as $identifierName) {
-            DataHelper::closeConnection($this->CONFIG, $identifierName);
-        }
-    }
-
-    /**
      * @param null $forceDriver
      * @param null $identifier
      * @return int
@@ -118,12 +106,36 @@ class MySQL implements DatabaseInterface
     }
 
     /**
+     * @since 6.1.0
+     */
+    public function __destruct()
+    {
+        $identifiers = $this->CONFIG->getIdentifiers();
+
+        foreach ($identifiers as $identifierName) {
+            DataHelper::closeConnection($this->CONFIG, $identifierName);
+        }
+    }
+
+    /**
      * @return DatabaseConfig
      * @since 6.1.0
      */
     public function getConfig()
     {
         return $this->CONFIG;
+    }
+
+    /**
+     * @param DatabaseConfig $databaseConfig
+     * @return $this|mixed
+     * @since 6.1.0
+     */
+    public function setConfig($databaseConfig)
+    {
+        $this->CONFIG = $databaseConfig;
+
+        return $this;
     }
 
     /**
@@ -146,18 +158,6 @@ class MySQL implements DatabaseInterface
         }
 
         return $return;
-    }
-
-    /**
-     * @param DatabaseConfig $databaseConfig
-     * @return $this|mixed
-     * @since 6.1.0
-     */
-    public function setConfig($databaseConfig)
-    {
-        $this->CONFIG = $databaseConfig;
-
-        return $this;
     }
 
     /**
@@ -263,16 +263,6 @@ class MySQL implements DatabaseInterface
         $this->CONFIG->setServerPassword($serverPassword, $identifier);
 
         return $this;
-    }
-
-    /**
-     * @param null $identifier
-     * @return int
-     * @since 6.1.0
-     */
-    public function getPreferredDriver($identifier = null)
-    {
-        return $this->CONFIG->getPreferredDriver($identifier);
     }
 
     /**
@@ -523,15 +513,6 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @return mixed
-     * @since 6.1.0
-     */
-    public function getConnection()
-    {
-        return $this;
-    }
-
-    /**
      * @param $connection
      * @param $PDOException
      * @throws ExceptionHandler
@@ -563,6 +544,25 @@ class MySQL implements DatabaseInterface
                 __FUNCTION__
             );
         }
+    }
+
+    /**
+     * @param null $identifier
+     * @return int
+     * @since 6.1.0
+     */
+    public function getPreferredDriver($identifier = null)
+    {
+        return $this->CONFIG->getPreferredDriver($identifier);
+    }
+
+    /**
+     * @return mixed
+     * @since 6.1.0
+     */
+    public function getConnection()
+    {
+        return $this;
     }
 
     /**
@@ -724,108 +724,6 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param array $parameters
-     * @return array
-     * @since 6.1.0
-     */
-    private function getParameters($parameters = [])
-    {
-        if (!is_array($parameters)) {
-            $parameters = (array)$parameters;
-        }
-        return $parameters;
-    }
-
-    /**
-     * @param $statement
-     * @param $parameters
-     * @return array
-     * @since 6.1.0
-     */
-    private function setPreparedStatement($statement, $parameters)
-    {
-        $return = [$statement, str_pad("", count($parameters), "s")];
-        foreach ($this->getParameters($parameters) as $key => $value) {
-            $return[] =& $parameters[$key];
-        }
-        if (count($parameters)) {
-            mysqli_stmt_bind_param(...$return);
-        }
-
-        return $return;
-    }
-
-    /**
-     * @param $statement
-     * @param $identifierName
-     * @return bool
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function getDataFromImproved($statement, $identifierName = null)
-    {
-        $this->CONFIG->setStatement($statement, $identifierName);
-        /** @noinspection PhpParamsInspection */
-        $this->CONFIG->setLastInsertId(
-            mysqli_insert_id(
-                $this->CONFIG->getConnection($identifierName)
-            ),
-            $identifierName
-        );
-        if (isset($statement->affected_rows)) {
-            $this->CONFIG->setAffectedRows($statement->affected_rows, $identifierName);
-        }
-
-        return ($this->CONFIG->getAffectedRows($identifierName) || $this->CONFIG->getLastInsertId($identifierName));
-    }
-
-    /**
-     * @param resource $statement
-     * @param $identifierName
-     * @return bool
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function getDataFromDeprecated($statement, $identifierName = null)
-    {
-        $this->CONFIG->setStatement($statement, $identifierName);
-        $this->CONFIG->setLastInsertId(
-            mysql_insert_id($this->CONFIG->getConnection($identifierName)),
-            $identifierName
-        );
-        $this->CONFIG->setAffectedRows(
-            mysql_affected_rows($this->CONFIG->getConnection($identifierName)),
-            $identifierName
-        );
-
-        return (
-            $this->CONFIG->getAffectedRows($identifierName) ||
-            $this->CONFIG->getLastInsertId($identifierName) ||
-            !mysql_errno($this->CONFIG->getConnection($identifierName))
-        );
-    }
-
-    /**
-     * @param $statement
-     * @param null $identifierName
-     * @return bool
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function getDataFromPdo($statement, $identifierName = null)
-    {
-        $connection = $this->CONFIG->getConnection($identifierName);
-        $this->CONFIG->setStatement($statement, $identifierName);
-        $this->CONFIG->setLastInsertId($connection->lastInsertId(), $identifierName);
-        $this->CONFIG->setAffectedRows($statement->rowCount(), $identifierName);
-
-        return (
-            $this->CONFIG->getAffectedRows($identifierName) ||
-            $this->CONFIG->getLastInsertId($identifierName)
-        );
-    }
-
-    /**
      * @param null $identifierName
      * @return mixed|null
      * @since 6.1.0
@@ -836,46 +734,28 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * Queries in 6.1.0 is always based on prepares, not raw.
-     * @param $queryString
-     * @param $parameters
-     * @param null $identifierName
-     * @return null
-     * @throws ExceptionHandler
+     * @param string $queryString
+     * @param array $parameters
+     * @return mixed|void
      * @since 6.1.0
-     * @noinspection PhpParamsInspection
      */
-    private function setQueryImproved($queryString, $parameters = [], $identifierName = null)
+    public function getFirst($queryString, $parameters)
     {
-        $return = null;
+        // TODO: Implement getFirst() method.
+    }
 
-        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
-        $preparedStatement = mysqli_prepare(
-            $this->CONFIG->getConnection($useIdentifier),
-            $queryString
-        );
-
-        if (!empty($preparedStatement)) {
-            $this->setPreparedStatement($preparedStatement, $parameters);
-            // Laying our trust in straight forward PHP >5.3 responses.
-            mysqli_stmt_execute($preparedStatement);
-            $this->CONFIG->setResult($preparedStatement->get_result(), $identifierName);
-
-            if (is_object($preparedStatement)) {
-                $return = $this->getDataFromImproved(
-                    $preparedStatement,
-                    $useIdentifier
-                );
-            }
-        }
-
-        $this->getDatabaseError(
-            mysqli_error($this->CONFIG->getConnection($useIdentifier)),
-            mysqli_errno($this->CONFIG->getConnection($useIdentifier)),
-            __FUNCTION__
-        );
-
-        return $return;
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @return bool|mixed|resource
+     * @throws ExceptionHandler
+     * @deprecate Use setQuery.
+     * @since 6.1.0
+     */
+    public function query($queryString, $parameters = [], $identifierName = null)
+    {
+        return $this->setQuery($queryString, $parameters, $identifierName);
     }
 
     /**
@@ -932,30 +812,251 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param string $queryString
-     * @param array $parameters
-     * @return mixed|void
+     * Queries in 6.1.0 is always based on prepares, not raw.
+     * @param $queryString
+     * @param $parameters
+     * @param null $identifierName
+     * @return null
+     * @throws ExceptionHandler
      * @since 6.1.0
+     * @noinspection PhpParamsInspection
      */
-    public function getFirst($queryString, $parameters)
+    private function setQueryImproved($queryString, $parameters = [], $identifierName = null)
     {
-        // TODO: Implement getFirst() method.
+        $return = null;
+
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+        $preparedStatement = mysqli_prepare(
+            $this->CONFIG->getConnection($useIdentifier),
+            $queryString
+        );
+
+        if (!empty($preparedStatement)) {
+            $this->setPreparedStatement($preparedStatement, $parameters);
+            // Laying our trust in straight forward PHP >5.3 responses.
+            mysqli_stmt_execute($preparedStatement);
+            $this->CONFIG->setResult($preparedStatement->get_result(), $identifierName);
+
+            if (is_object($preparedStatement)) {
+                $return = $this->getDataFromImproved(
+                    $preparedStatement,
+                    $useIdentifier
+                );
+            }
+        }
+
+        $this->getDatabaseError(
+            mysqli_error($this->CONFIG->getConnection($useIdentifier)),
+            mysqli_errno($this->CONFIG->getConnection($useIdentifier)),
+            __FUNCTION__
+        );
+
+        return $return;
     }
 
     /**
-     * @param $resource
-     * @param null $identifierName
-     * @return bool|DatabaseConfig
+     * @param $statement
+     * @param $parameters
+     * @return array
+     * @since 6.1.0
      */
-    private function getProperResource($resource, $identifierName = null)
+    private function setPreparedStatement($statement, $parameters)
     {
-        $return = false;
-
-        if (!is_null($resource) && get_class($resource) === 'mysqli') {
-            $return = $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifierName);
+        $return = [$statement, str_pad("", count($parameters), "s")];
+        foreach ($this->getParameters($parameters) as $key => $value) {
+            $return[] =& $parameters[$key];
+        }
+        if (count($parameters)) {
+            mysqli_stmt_bind_param(...$return);
         }
 
         return $return;
+    }
+
+    /**
+     * @param array $parameters
+     * @return array
+     * @since 6.1.0
+     */
+    private function getParameters($parameters = [])
+    {
+        if (!is_array($parameters)) {
+            $parameters = (array)$parameters;
+        }
+        return $parameters;
+    }
+
+    /**
+     * @param $statement
+     * @param $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromImproved($statement, $identifierName = null)
+    {
+        $this->CONFIG->setStatement($statement, $identifierName);
+        /** @noinspection PhpParamsInspection */
+        $this->CONFIG->setLastInsertId(
+            mysqli_insert_id(
+                $this->CONFIG->getConnection($identifierName)
+            ),
+            $identifierName
+        );
+        if (isset($statement->affected_rows)) {
+            $this->CONFIG->setAffectedRows($statement->affected_rows, $identifierName);
+        }
+
+        return ($this->CONFIG->getAffectedRows($identifierName) || $this->CONFIG->getLastInsertId($identifierName));
+    }
+
+    /**
+     * Query with deprecated driver (Unsafe!).
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @return bool|resource
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function setQueryDeprecated($queryString, $parameters = [], $identifierName = null)
+    {
+        $return = null;
+        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+
+        $halfSafeString = $this->getHalfSafeString(
+            $queryString,
+            $parameters
+        );
+        $queryResponse = mysql_query(
+            $halfSafeString,
+            $this->CONFIG->getConnection($useIdentifier)
+        );
+
+        $this->getDatabaseError(
+            mysql_error($this->CONFIG->getConnection($useIdentifier)),
+            mysql_errno($this->CONFIG->getConnection($useIdentifier)),
+            __FUNCTION__
+        );
+
+        $this->CONFIG->setResult($queryResponse, $identifierName);
+        if ($properReturn = $this->getDataFromDeprecated($queryResponse, $useIdentifier)) {
+            $return = $properReturn;
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @return string
+     * @since 6.1.0
+     */
+    public function getHalfSafeString($queryString, $parameters)
+    {
+        $queryString = preg_replace('/ \?$/', ' %s', $queryString);
+        $queryString = preg_replace("/ \? /", ' %s ', $queryString);
+
+        $newArray = [];
+        foreach ($parameters as $key => $value) {
+            $newArray[$key] = sprintf("'%s'", mysql_real_escape_string($value));
+        }
+
+        return sprintf(
+            $queryString,
+            ...$newArray
+        );
+    }
+
+    /**
+     * @param resource $statement
+     * @param $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromDeprecated($statement, $identifierName = null)
+    {
+        $this->CONFIG->setStatement($statement, $identifierName);
+        $this->CONFIG->setLastInsertId(
+            mysql_insert_id($this->CONFIG->getConnection($identifierName)),
+            $identifierName
+        );
+        $this->CONFIG->setAffectedRows(
+            mysql_affected_rows($this->CONFIG->getConnection($identifierName)),
+            $identifierName
+        );
+
+        return (
+            $this->CONFIG->getAffectedRows($identifierName) ||
+            $this->CONFIG->getLastInsertId($identifierName) ||
+            !mysql_errno($this->CONFIG->getConnection($identifierName))
+        );
+    }
+
+    /**
+     * @param $queryString
+     * @param array $parameters
+     * @param null $identifierName
+     * @return null
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function setQueryPdo($queryString, $parameters = [], $identifierName = null)
+    {
+        /** @var PDO $connection */
+        $connection = $this->CONFIG->getConnection($identifierName);
+        /** @var PDOStatement $statementPrepare */
+        $statementPrepare = $connection->prepare($queryString);
+        $return = $statementPrepare->execute($parameters);
+        $this->CONFIG->setResult($return, $identifierName);
+
+        $this->getDatabaseError(
+            implode(', ', $connection->errorInfo()),
+            $connection->errorCode(),
+            __FUNCTION__
+        );
+
+        $this->getDataFromPdo($statementPrepare, $identifierName);
+
+        return ($return ||
+            $this->CONFIG->getLastInsertId($identifierName) ||
+            $this->CONFIG->getAffectedRows($identifierName)
+        );
+    }
+
+    /**
+     * @param $statement
+     * @param null $identifierName
+     * @return bool
+     * @throws ExceptionHandler
+     * @since 6.1.0
+     */
+    private function getDataFromPdo($statement, $identifierName = null)
+    {
+        $connection = $this->CONFIG->getConnection($identifierName);
+        $this->CONFIG->setStatement($statement, $identifierName);
+        $this->CONFIG->setLastInsertId($connection->lastInsertId(), $identifierName);
+        $this->CONFIG->setAffectedRows($statement->rowCount(), $identifierName);
+
+        return (
+            $this->CONFIG->getAffectedRows($identifierName) ||
+            $this->CONFIG->getLastInsertId($identifierName)
+        );
+    }
+
+    /**
+     * One database fetcher.
+     * @param $resource
+     * @param bool $assoc
+     * @return mixed|void
+     * @deprecated Use getRow instead().
+     * @since 6.1.0
+     */
+    public function fetch($resource = null, $assoc = true)
+    {
+        return $this->getRow($resource, $this->CONFIG->getCurrentIdentifier(), $assoc);
     }
 
     /**
@@ -1017,119 +1118,18 @@ class MySQL implements DatabaseInterface
     }
 
     /**
-     * @param $queryString
-     * @param array $parameters
-     * @param null $identifierName
-     * @return bool|mixed|resource
-     * @throws ExceptionHandler
-     * @deprecate Use setQuery.
-     * @since 6.1.0
-     */
-    public function query($queryString, $parameters = [], $identifierName = null)
-    {
-        return $this->setQuery($queryString, $parameters, $identifierName);
-    }
-
-    /**
-     * One database fetcher.
      * @param $resource
-     * @param bool $assoc
-     * @return mixed|void
-     * @deprecated Use getRow instead().
-     * @since 6.1.0
-     */
-    public function fetch($resource = null, $assoc = true)
-    {
-        return $this->getRow($resource, $this->CONFIG->getCurrentIdentifier(), $assoc);
-    }
-
-    /**
-     * @param $queryString
-     * @param array $parameters
-     * @return string
-     * @since 6.1.0
-     */
-    public function getHalfSafeString($queryString, $parameters)
-    {
-        $queryString = preg_replace('/ \?$/', ' %s', $queryString);
-        $queryString = preg_replace("/ \? /", ' %s ', $queryString);
-
-        $newArray = [];
-        foreach ($parameters as $key => $value) {
-            $newArray[$key] = sprintf("'%s'", mysql_real_escape_string($value));
-        }
-
-        return sprintf(
-            $queryString,
-            ...$newArray
-        );
-    }
-
-    /**
-     * Query with deprecated driver (Unsafe!).
-     * @param $queryString
-     * @param array $parameters
      * @param null $identifierName
-     * @return bool|resource
-     * @throws ExceptionHandler
-     * @since 6.1.0
+     * @return bool|DatabaseConfig
      */
-    private function setQueryDeprecated($queryString, $parameters = [], $identifierName = null)
+    private function getProperResource($resource, $identifierName = null)
     {
-        $return = null;
-        $useIdentifier = $this->CONFIG->getCurrentIdentifier($identifierName);
+        $return = false;
 
-        $halfSafeString = $this->getHalfSafeString(
-            $queryString,
-            $parameters
-        );
-        $queryResponse = mysql_query(
-            $halfSafeString,
-            $this->CONFIG->getConnection($useIdentifier)
-        );
-
-        $this->getDatabaseError(
-            mysql_error($this->CONFIG->getConnection($useIdentifier)),
-            mysql_errno($this->CONFIG->getConnection($useIdentifier)),
-            __FUNCTION__
-        );
-
-        $this->CONFIG->setResult($queryResponse, $identifierName);
-        if ($properReturn = $this->getDataFromDeprecated($queryResponse, $useIdentifier)) {
-            $return = $properReturn;
+        if (!is_null($resource) && get_class($resource) === 'mysqli') {
+            $return = $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifierName);
         }
 
         return $return;
-    }
-
-    /**
-     * @param $queryString
-     * @param array $parameters
-     * @param null $identifierName
-     * @return null
-     * @throws ExceptionHandler
-     * @since 6.1.0
-     */
-    private function setQueryPdo($queryString, $parameters = [], $identifierName = null)
-    {
-        /** @var PDO $connection */
-        $connection = $this->CONFIG->getConnection($identifierName);
-        /** @var PDOStatement $statementPrepare */
-        $statementPrepare = $connection->prepare($queryString);
-        $return = $statementPrepare->execute($parameters);
-        $this->CONFIG->setResult($return, $identifierName);
-
-        $this->getDatabaseError(
-            implode(', ', $connection->errorInfo()),
-            $connection->errorCode(),
-            __FUNCTION__
-        );
-
-        $this->getDataFromPdo($statementPrepare, $identifierName);
-
-        return ($return ||
-            $this->CONFIG->getLastInsertId($identifierName) ||
-            $this->CONFIG->getAffectedRows($identifierName)
-        );
     }
 }

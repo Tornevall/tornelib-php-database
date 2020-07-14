@@ -1,7 +1,6 @@
 <?php
 
 /** @noinspection PhpComposerExtensionStubsInspection */
-
 /** @noinspection PhpDeprecationInspection */
 
 namespace TorneLIB\Module;
@@ -413,20 +412,19 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * Configurations.
+     * @test
      * @throws ExceptionHandler
-     * @throws JsonMapper_Exception
-     * @noinspection PhpUnusedPrivateMethodInspection
      */
-    private function getConfig()
+    public function getModImprovedQuery()
     {
-        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
-        $localhostConfigurationData = $conf->getServer('localhost');
+        /** @var MODULE_DATABASE $module */
+        if ($module = $this->getConnection(new MODULE_DATABASE())) {
+            $queryResult = $module->setQuery(
+                'SELECT * FROM tests'
+            );
 
-        static::assertTrue(
-            get_class($conf) === Servers::class &&
-            $localhostConfigurationData->getPassword() === 'tornelib1337'
-        );
+            static::assertTrue($queryResult);
+        }
     }
 
     /**
@@ -450,22 +448,6 @@ class DatabaseTest extends TestCase
         $module->setDatabase($this->database);
 
         return $module->getConnection();
-    }
-
-    /**
-     * @test
-     * @throws ExceptionHandler
-     */
-    public function getModImprovedQuery()
-    {
-        /** @var MODULE_DATABASE $module */
-        if ($module = $this->getConnection(new MODULE_DATABASE())) {
-            $queryResult = $module->setQuery(
-                'SELECT * FROM tests'
-            );
-
-            static::assertTrue($queryResult);
-        }
     }
 
     /**
@@ -554,23 +536,6 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
-     */
-    public function insertRows($helper = false)
-    {
-        $connection = $this->getConnection(new MySQL());
-        $count = 0;
-        $success = 0;
-        while ($count++ < 5) {
-            $success += $connection->setQuery('INSERT INTO tests (data) VALUES (?)', rand(1000, 2000));
-        }
-        if (!$helper) {
-            static::assertEquals(5, $success);
-            return;
-        }
-    }
-
-    /**
-     * @test
      * Using deprecated query method.
      * @throws ExceptionHandler
      */
@@ -587,6 +552,23 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             is_array($first) && is_array($second)
         );
+    }
+
+    /**
+     * @test
+     */
+    public function insertRows($helper = false)
+    {
+        $connection = $this->getConnection(new MySQL());
+        $count = 0;
+        $success = 0;
+        while ($count++ < 5) {
+            $success += $connection->setQuery('INSERT INTO tests (data) VALUES (?)', rand(1000, 2000));
+        }
+        if (!$helper) {
+            static::assertEquals(5, $success);
+            return;
+        }
     }
 
     /**
@@ -667,6 +649,22 @@ class DatabaseTest extends TestCase
         static::assertTrue(
             is_array($first) && is_array($second)
         );
+    }
 
+    /**
+     * Configurations.
+     * @throws ExceptionHandler
+     * @throws JsonMapper_Exception
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
+    private function getConfig()
+    {
+        $conf = (new DatabaseConfig())->getConfig(__DIR__ . '/config.json');
+        $localhostConfigurationData = $conf->getServer('localhost');
+
+        static::assertTrue(
+            get_class($conf) === Servers::class &&
+            $localhostConfigurationData->getPassword() === 'tornelib1337'
+        );
     }
 }
