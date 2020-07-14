@@ -472,6 +472,10 @@ class DatabaseTest extends TestCase
      */
     public function getModDepQuery()
     {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
         /** @var MODULE_DATABASE $module */
         if ($module = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_DEPRECATED)) {
             $module->setPreferredDriver(Drivers::MYSQL_DEPRECATED);
