@@ -659,7 +659,6 @@ class DatabaseTest extends TestCase
 
     /**
      * @test
-     * @throws ExceptionHandler
      */
     public function ipv6Connect()
     {
@@ -717,6 +716,86 @@ class DatabaseTest extends TestCase
                 )
             );
         }
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getFirstNative()
+    {
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL());
+        $first = $connection->getFirst('SELECT * FROM tests LIMIT 1');
+        static::assertTrue(
+            isset($first['dataindex'])
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getFirstPdo()
+    {
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL(), Drivers::MYSQL_PDO);
+        $first = $connection->getFirst('SELECT * FROM tests LIMIT 1');
+        static::assertTrue(
+            isset($first['dataindex'])
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getFirstDeprecated()
+    {
+        if (PHP_VERSION_ID >= 70000) {
+            static::markTestSkipped('Unable to perform test: Deprecated driver was removed from PHP 7.0 and above.');
+            return;
+        }
+
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL(), Drivers::MYSQL_DEPRECATED);
+        $first = $connection->getFirst('SELECT * FROM tests LIMIT 1');
+        static::assertTrue(
+            isset($first['dataindex'])
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getQueryFirstNative()
+    {
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MySQL());
+        $first = $connection->query_first('SELECT * FROM tests LIMIT 1');
+        static::assertTrue(
+            isset($first['dataindex'])
+        );
+    }
+
+    /**
+     * @test
+     * @throws ExceptionHandler
+     */
+    public function getFirstMod()
+    {
+        $this->insertRows();
+        /** @var MySQL $connection */
+        $connection = $this->getConnection(new MODULE_DATABASE(), Drivers::MYSQL_PDO);
+        $first = $connection->getFirst('SELECT * FROM tests LIMIT 1');
+        static::assertTrue(
+            isset($first['dataindex'])
+        );
     }
 
     /**

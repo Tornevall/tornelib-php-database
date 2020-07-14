@@ -7,12 +7,10 @@ use TorneLIB\Exception\Constants;
 use TorneLIB\Exception\ExceptionHandler;
 use TorneLIB\Helpers\DataHelper;
 use TorneLIB\Helpers\Version;
-use TorneLIB\Model\Database\Drivers;
 use TorneLIB\Model\Database\Types;
 use TorneLIB\Model\Interfaces\DatabaseInterface;
 use TorneLIB\Module\Config\DatabaseConfig;
 use TorneLIB\Module\Database\Drivers\MySQL;
-use TorneLIB\Utils\Security;
 
 try {
     Version::getRequiredVersion();
@@ -33,8 +31,8 @@ class MODULE_DATABASE implements DatabaseInterface
      * @var mixed
      * @since 6.1.0
      */
-
     private $database;
+
     /**
      * @var DatabaseConfig
      * @since 6.1.0
@@ -43,7 +41,6 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * MODULE_DATABASE constructor.
-     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function __construct()
@@ -77,6 +74,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return Types|void
+     * @since 6.1.0
      */
     public function getServerType($identifierName = null)
     {
@@ -108,6 +106,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $name
      * @param $arguments
      * @return mixed|null
+     * @since 6.1.0
      */
     public function __call($name, $arguments)
     {
@@ -145,6 +144,7 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function getConfig()
     {
@@ -154,6 +154,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param DatabaseConfig $databaseConfig
      * @return mixed
+     * @since 6.1.0
      */
     public function setConfig($databaseConfig)
     {
@@ -242,6 +243,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param null $schemaName
      * @return mixed
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function connect(
         $serverIdentifier = 'default',
@@ -287,6 +289,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param null $identifierName
      * @return DatabaseConfig
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function setServerType($databaseType = Types::MYSQL, $identifierName = null)
     {
@@ -326,6 +329,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $serverIdentifier
      * @return MODULE_DATABASE
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     private function setPreferredDriverOverrider($serverType, $serverIdentifier)
     {
@@ -345,6 +349,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $schemaName
      * @param $serverIdentifier
      * @return bool
+     * @since 6.1.0
      */
     private function setPreparedEarlySchema($schemaName, $serverIdentifier)
     {
@@ -367,6 +372,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param bool $throwable
      * @return string
      * @throws ExceptionHandler
+     * @since 6.1.0
      */
     public function getDatabase($identifierName, $throwable = true)
     {
@@ -378,6 +384,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $schemaName
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setDatabase($schemaName, $identifierName = null)
     {
@@ -387,6 +394,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param string $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setIdentifier($identifierName)
     {
@@ -395,6 +403,7 @@ class MODULE_DATABASE implements DatabaseInterface
 
     /**
      * @return string
+     * @since 6.1.0
      */
     public function getIdentifier()
     {
@@ -405,6 +414,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param int $portNumber
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerPort($portNumber, $identifierName = null)
     {
@@ -414,6 +424,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return int|string|null
+     * @since 6.1.0
      */
     public function getServerPort($identifierName = null)
     {
@@ -424,6 +435,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param string $serverHost
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerHost($serverHost, $identifierName = null)
     {
@@ -433,6 +445,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerHost($identifierName = null)
     {
@@ -443,6 +456,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $userName
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerUser($userName, $identifierName = null)
     {
@@ -452,6 +466,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerUser($identifierName = null)
     {
@@ -462,6 +477,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $password
      * @param null $identifierName
      * @return DatabaseConfig
+     * @since 6.1.0
      */
     public function setServerPassword($password, $identifierName = null)
     {
@@ -471,6 +487,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return string
+     * @since 6.1.0
      */
     public function getServerPassword($identifierName = null)
     {
@@ -482,6 +499,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $preferredDriver
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setPreferredDriver($preferredDriver, $identifierName = null)
     {
@@ -493,6 +511,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return mixed
+     * @throws ExceptionHandler
      * @since 6.1.0
      */
     public function getPreferredDriver($identifierName = null)
@@ -504,6 +523,7 @@ class MODULE_DATABASE implements DatabaseInterface
      * @param $serverOptions
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function setServerOptions($serverOptions, $identifierName = null)
     {
@@ -513,6 +533,7 @@ class MODULE_DATABASE implements DatabaseInterface
     /**
      * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
     public function getServerOptions($identifierName = null)
     {
@@ -520,26 +541,41 @@ class MODULE_DATABASE implements DatabaseInterface
     }
 
     /**
-     * setQuery (query)
+     * setQuery (query).
      * @param string $queryString
      * @param array $parameters
+     * @param null $identifierName
      * @return mixed
+     * @since 6.1.0
      */
-    public function setQuery($queryString, $parameters = [])
+    public function setQuery($queryString, $parameters = [], $identifierName = null)
     {
         return $this->database->setQuery($queryString, $parameters);
     }
 
     /**
+     * @param $querystring
+     * @param $parameters
+     * @return mixed|void
+     * @since 6.1.0
+     */
+    public function query_first($querystring, $parameters = [])
+    {
+        return $this->getFirst($querystring, $parameters);
+    }
+
+    /**
      * getFirst (prior: query_first)
-     *
      * @param string $queryString
      * @param array $parameters
-     * @return mixed
+     * @param null $identifierName
+     * @param bool $assoc
+     * @return mixed|void
+     * @since 6.1.0
      */
-    public function getFirst($queryString, $parameters)
+    public function getFirst($queryString, $parameters = [], $identifierName = null, $assoc = true)
     {
-        return $this->database->getFirst($queryString, $parameters);
+        return $this->database->getFirst($queryString, $parameters, $identifierName, $assoc);
     }
 
     /**
