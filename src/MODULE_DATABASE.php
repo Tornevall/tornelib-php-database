@@ -57,7 +57,8 @@ class MODULE_DATABASE implements DatabaseInterface
     public function __call($name, $arguments)
     {
         $return = null;
-        if (!is_null($this->database) && method_exists($this->database, $name)) {
+        $dbExist = !is_null($this->database);
+        if ($dbExist && method_exists($this->database, $name)) {
             $return = call_user_func_array(
                 [
                     $this->database,
@@ -65,7 +66,9 @@ class MODULE_DATABASE implements DatabaseInterface
                 ],
                 $arguments
             );
-        } elseif (!is_null($this->database) && method_exists($this->database->CONFIG, $name)) {
+        } elseif ($dbExist &&
+            method_exists($this->database->CONFIG, $name)
+        ) {
             $return = call_user_func_array(
                 [
                     $this->database->CONFIG,
@@ -299,6 +302,17 @@ class MODULE_DATABASE implements DatabaseInterface
     public function getServerPassword($identifierName = null)
     {
         return $this->CONFIG->getServerPassword($identifierName);
+    }
+
+    /**
+     * Mostly for mysql where more drivers (mysqli, pdo, etc) than one is available.
+     * @param $preferredDriver
+     * @param null $identifier
+     * @return mixed
+     */
+    public function setPreferredDriver($preferredDriver, $identifier = null)
+    {
+        return $this->database->setPreferredDriver($preferredDriver, $identifier);
     }
 
     /**
