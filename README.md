@@ -18,18 +18,3 @@ Test works best with a database installed. Installing it automatically is not of
       `data` varchar(45) NOT NULL,
       PRIMARY KEY (`dataindex`,`data`)
     ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-## To-Do
-
-Exceptions to transfer to the exception handler (eventually), on implementation.
-
-	const DRIVER_TYPE_MYSQLD_NOT_EXIST = 5000;
-	const DRIVER_TYPE_MYSQLI_NOT_EXIST = 5001;
-	const DRIVER_TYPE_MYSQLP_NOT_EXIST = 5002;
-	const DRIVER_TYPE_MYSQLP_CONNECT_UNKNOWN_ERROR = 5003;
-	const DRIVER_TYPE_MYSQLP_CHANGEDB_ERROR = 5004;
-	const DRIVER_CONFIGURATION_MISSING = 5005;
-	const DRIVER_EMPTY_QUERY = 5006;
-	const DRIVER_EMPTY_STATEMENT = 5007;
-	const DRIVER_PREPARE_DEPRECATED = 5008;
-	const DRIVER_TYPE_UNDEFINED = 5009;
