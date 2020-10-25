@@ -186,7 +186,7 @@ class MODULE_DATABASE implements DatabaseInterface
      */
     public function escape($inputString, $identifierName = null)
     {
-        if (method_exists($this->database, 'escape')) {
+        if (!empty($this->database) && method_exists($this->database, 'escape')) {
             $return = $this->database->escape($inputString, $identifierName);
         } else {
             try {

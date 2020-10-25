@@ -355,7 +355,7 @@ class DatabaseTest extends TestCase
     public function connectManualSuccess()
     {
         $configured = new MySQL();
-        $configured->connect(
+        $isConnected = $configured->connect(
             null,
             null,
             $this->serverhost,
@@ -363,6 +363,7 @@ class DatabaseTest extends TestCase
             $this->password
         );
         $configured->setDatabase('tornelib_tests');
+        static::assertTrue((bool)$isConnected);
     }
 
     /**
@@ -388,13 +389,14 @@ class DatabaseTest extends TestCase
 
         $sql = new MySQL();
         $sql->setPreferredDriver(Drivers::MYSQL_PDO);
-        $sql->connect(
+        $isConnected = $sql->connect(
             null,
             null,
             '127.0.0.1',
             sprintf('fail%s', sha1(uniqid('', true))),
             'tornelib1337'
         );
+        static::assertTrue((bool)$isConnected);
     }
 
     /**
