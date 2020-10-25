@@ -512,7 +512,7 @@ class MySQL implements DatabaseInterface
 
         $errorCode = Constants::LIB_DATABASE_CONNECTION_EXCEPTION;
 
-        if (method_exists($connection, 'errorInfo')) {
+        if (!empty($connection) && method_exists($connection, 'errorInfo')) {
             $errorMessage = implode(' ', $connection->errorInfo());
         }
         if (get_class($PDOException) === 'PDOException') {
@@ -597,7 +597,7 @@ class MySQL implements DatabaseInterface
                     );
                 }
             } elseif ($this->CONFIG->getPreferredDriver($useIdentifier) === Drivers::MYSQL_PDO) {
-                if (method_exists($connection, "select_db")) {
+                if (!empty($connection) && method_exists($connection, "select_db")) {
                     $connection->select_db($schemaName);
                 } else {
                     // Very specific for PDO.
@@ -1126,7 +1126,7 @@ class MySQL implements DatabaseInterface
                 }
                 break;
             case Drivers::MYSQL_PDO:
-                if (method_exists($statement, 'fetchObject')) {
+                if (!empty($statement) && method_exists($statement, 'fetchObject')) {
                     if ($assoc) {
                         // Fetch an object and cast it as an array.
                         $return = (array)$statement->fetchObject();
