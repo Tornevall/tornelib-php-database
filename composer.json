@@ -2,7 +2,7 @@
     "name": "tornevall/tornelib-php-database",
     "description": "TorneLIB - Generic database driver for MySQL, PDO, etc",
     "license": "Apache-2.0",
-    "version": "6.1.1",
+    "version": "6.1.2",
     "require": {
         "tornevall/tornelib-php-errorhandler": "6.1.*",
         "tornevall/tornelib-php-version": ">= 6.1.0",

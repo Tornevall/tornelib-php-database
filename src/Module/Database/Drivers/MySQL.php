@@ -1156,7 +1156,7 @@ class MySQL implements DatabaseInterface
     {
         $return = false;
 
-        if (!is_null($resource) && get_class($resource) === 'mysqli') {
+        if (is_object($resource) && !is_null($resource) && get_class($resource) === 'mysqli') {
             $return = $this->CONFIG->setPreferredDriver(Drivers::MYSQL_IMPROVED, $identifierName);
         }
 
